@@ -1,112 +1,265 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import React, { useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  RefreshControl,
+  TouchableOpacity,
+} from 'react-native';
+import { useAppDispatch } from '@/store/hooks';
+import { addFavorite } from '@/store/slices/favoritesSlice';
+import BookCard, { Book } from '@/components/BookCard';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
 
-export default function TabTwoScreen() {
+/**
+ * Search Screen for UniReads
+ * - Search books from Open Library API
+ * - Displays searchable book list
+ * - Supports pull-to-refresh
+ * - Shows loading and error states
+ * - Allows adding books to favorites
+ */
+export default function SearchScreen() {
+  const dispatch = useAppDispatch();
+  
+  // State management
+  const [searchQuery, setSearchQuery] = useState('javascript'); // Default search term
+  const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  /**
+   * Fetch books from Open Library search API
+   * @param query - Search term (e.g., "python", "react")
+   * @param isRefresh - Whether this is a pull-to-refresh action
+   */
+  const fetchBooks = useCallback(async (query: string, isRefresh = false) => {
+    if (!query.trim()) return;
+
+    // Set appropriate loading state
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=20`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Extract relevant book data from API response
+      const fetchedBooks: Book[] = (data.docs || []).map((doc: any) => ({
+        key: doc.key,
+        title: doc.title,
+        author_name: doc.author_name,
+        cover_i: doc.cover_i,
+        first_publish_year: doc.first_publish_year,
+        edition_count: doc.edition_count,
+      }));
+
+      setBooks(fetchedBooks);
+    } catch (err) {
+      console.error('Error fetching books:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch books');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  // Fetch initial books on mount
+  React.useEffect(() => {
+    fetchBooks(searchQuery);
+  }, []);
+
+  // Handle search button press
+  const handleSearch = () => {
+    fetchBooks(searchQuery);
+  };
+
+  // Handle pull-to-refresh
+  const handleRefresh = () => {
+    fetchBooks(searchQuery, true);
+  };
+
+  // Handle adding book to favorites
+  const handleFavoritePress = (book: Book) => {
+    dispatch(addFavorite(book));
+  };
+
+  // Render loading state
+  if (loading && books.length === 0) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#3b82f6" />
+        <Text style={styles.loadingText}>Searching books...</Text>
+      </View>
+    );
+  }
+
+  // Render error state
+  if (error && books.length === 0) {
+    return (
+      <View style={styles.centerContainer}>
+        <IconSymbol name="exclamationmark.triangle" size={48} color="#ef4444" />
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => fetchBooks(searchQuery)}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchInputContainer}>
+          <IconSymbol name="magnifyingglass" size={20} color="#6b7280" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search books, authors, ISBN..."
+            placeholderTextColor="#9ca3af"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onSubmitEditing={handleSearch}
+            returnKeyType="search"
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <IconSymbol name="xmark.circle.fill" size={20} color="#9ca3af" />
+            </TouchableOpacity>
+          )}
+        </View>
+        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+          <IconSymbol name="arrow.right" size={20} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Books List */}
+      <FlatList
+        data={books}
+        keyExtractor={(item) => item.key}
+        renderItem={({ item }) => (
+          <BookCard book={item} onFavoritePress={handleFavoritePress} />
+        )}
+        contentContainerStyle={styles.listContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#3b82f6']}
+            tintColor="#3b82f6"
+          />
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <IconSymbol name="magnifyingglass" size={64} color="#9ca3af" />
+            <Text style={styles.emptyText}>No books found</Text>
+            <Text style={styles.emptySubtext}>Try a different search term</Text>
+          </View>
+        }
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
   },
-  titleContainer: {
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#6b7280',
+  },
+  errorText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#ef4444',
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 16,
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  searchContainer: {
     flexDirection: 'row',
+    padding: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
     gap: 8,
+  },
+  searchInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    gap: 8,
+  },
+  searchIcon: {
+    marginRight: 4,
+  },
+  searchInput: {
+    flex: 1,
+    height: 44,
+    fontSize: 16,
+    color: '#1f2937',
+  },
+  searchButton: {
+    backgroundColor: '#3b82f6',
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  listContainer: {
+    padding: 16,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingTop: 60,
+  },
+  emptyText: {
+    marginTop: 12,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#6b7280',
+  },
+  emptySubtext: {
+    marginTop: 4,
+    fontSize: 14,
+    color: '#9ca3af',
   },
 });
