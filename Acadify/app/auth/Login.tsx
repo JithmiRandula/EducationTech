@@ -1,37 +1,60 @@
-import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TextInput as RNTextInput, Button } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TextInput as RNTextInput,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Dimensions,
+  ImageBackground,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { useAppDispatch } from '@/store/hooks';
 import { setUser } from '@/store/userSlice';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+
+const { width, height } = Dimensions.get('window');
 
 // Key used to persist the auth token
 const TOKEN_KEY = 'unireads_token';
 
 // Form values shape
 type LoginValues = {
-  email: string; // We'll send email as the username field to the dummy API per requirement
+  username: string;
   password: string;
 };
 
 // Validation schema using Yup
 const LoginSchema = Yup.object().shape({
-  email: Yup.string().email('Enter a valid email').required('Email is required'),
-  password: Yup.string().min(3, 'Password is too short').required('Password is required'),
+  username: Yup.string().min(3, 'Username must be at least 3 characters').required('Username is required'),
+  password: Yup.string().min(3, 'Password must be at least 3 characters').required('Password is required'),
 });
 
 /**
  * Login screen that authenticates against dummyjson.com/auth/login
- * - Validates email & password with Yup
+ * - Beautiful gradient UI design
+ * - Validates username & password with Yup
  * - Persists token in AsyncStorage
  * - Stores user in Redux
  * - Navigates to the app root on success
+ * 
+ * DEFAULT CREDENTIALS:
+ * Username: emilys
+ * Password: emilyspass
  */
 export default function LoginScreen() {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (
     values: LoginValues,
@@ -40,8 +63,7 @@ export default function LoginScreen() {
   ) => {
     setSubmitting(true);
     try {
-      // NOTE: dummyjson expects a username field; we send the email value as username per project requirement
-      const payload = { username: values.email, password: values.password };
+      const payload = { username: values.username, password: values.password };
 
       const res = await fetch('https://dummyjson.com/auth/login', {
         method: 'POST',
@@ -50,10 +72,10 @@ export default function LoginScreen() {
       });
 
       const json = await res.json();
+      
       if (!res.ok) {
-        // API may return an object with message
         const msg = json?.message || 'Invalid credentials';
-        setFieldError('email', msg);
+        setFieldError('username', msg);
         return;
       }
 
@@ -62,7 +84,7 @@ export default function LoginScreen() {
       dispatch(
         setUser({
           id: json.id,
-          username: json.username || values.email,
+          username: json.username || values.username,
           token: json.token,
         })
       );
@@ -70,60 +92,349 @@ export default function LoginScreen() {
       // Navigate to the root (tabs)
       router.replace('/');
     } catch (err: any) {
-      setFieldError('email', err?.message || 'Network error');
+      setFieldError('username', err?.message || 'Network error. Please try again.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const initialValues: LoginValues = { email: 'kminchelle', password: '0lelplR' };
+  // Default credentials for easy testing
+  const initialValues: LoginValues = { username: 'emilys', password: 'emilyspass' };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>UniReads — Login</Text>
-
-      <Formik
-        initialValues={initialValues}
-        validationSchema={LoginSchema}
-        onSubmit={(values, { setFieldError, setSubmitting }) => handleSubmit(values, setFieldError, setSubmitting)}>
-        {({ handleChange, handleBlur, handleSubmit, values, errors, touched, isSubmitting }) => (
-          <View>
-            <RNTextInput
-              placeholder="Email"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              style={styles.input}
-              onChangeText={handleChange('email')}
-              onBlur={handleBlur('email')}
-              value={values.email}
-            />
-            {touched.email && errors.email ? <Text style={styles.error}>{errors.email}</Text> : null}
-
-            <RNTextInput
-              placeholder="Password"
-              secureTextEntry
-              style={styles.input}
-              onChangeText={handleChange('password')}
-              onBlur={handleBlur('password')}
-              value={values.password}
-            />
-            {touched.password && errors.password ? <Text style={styles.error}>{errors.password}</Text> : null}
-
-            {isSubmitting ? (
-              <ActivityIndicator />
-            ) : (
-              <Button title="Login" onPress={() => handleSubmit()} />
-            )}
+    <ImageBackground
+      source={require('@/assets/images/login_image.jpg')}
+      style={styles.backgroundImage}
+      resizeMode="cover">
+      {/* Dark Overlay for better text visibility */}
+      <View style={styles.overlay} />
+      
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
+          
+          {/* Cinematic Header with Blur Effect */}
+          <View style={styles.header}>
+            <View style={styles.logoContainer}>
+              <View style={styles.iconCircle}>
+                <IconSymbol name="book.fill" size={52} color="#fff" />
+              </View>
+              <Text style={styles.appName}>UniReads</Text>
+              <Text style={styles.tagline}>Your Gateway to Knowledge</Text>
+              <View style={styles.decorativeLine} />
+            </View>
           </View>
-        )}
-      </Formik>
-    </View>
+
+          {/* Login Form Card with Blur */}
+          <BlurView intensity={80} tint="dark" style={styles.formCard}>
+          <Text style={styles.welcomeText}>Welcome Back!</Text>
+          <Text style={styles.subtitle}>Sign in to continue your reading journey</Text>
+
+          <Formik
+            initialValues={initialValues}
+            validationSchema={LoginSchema}
+            onSubmit={(values, { setFieldError, setSubmitting }) =>
+              handleSubmit(values, setFieldError, setSubmitting)
+            }>
+            {({ handleChange, handleBlur, handleSubmit, values, errors, touched, isSubmitting }) => (
+              <View style={styles.form}>
+                {/* Username Input */}
+                <View style={styles.inputContainer}>
+                  <View style={styles.inputWrapper}>
+                    <IconSymbol name="person.fill" size={20} color="#6b7280" style={styles.inputIcon} />
+                    <RNTextInput
+                      placeholder="Username"
+                      autoCapitalize="none"
+                      style={styles.input}
+                      placeholderTextColor="#9ca3af"
+                      onChangeText={handleChange('username')}
+                      onBlur={handleBlur('username')}
+                      value={values.username}
+                    />
+                  </View>
+                  {touched.username && errors.username ? (
+                    <View style={styles.errorContainer}>
+                      <IconSymbol name="exclamationmark.circle" size={16} color="#ef4444" />
+                      <Text style={styles.errorText}>{errors.username}</Text>
+                    </View>
+                  ) : null}
+                </View>
+
+                {/* Password Input */}
+                <View style={styles.inputContainer}>
+                  <View style={styles.inputWrapper}>
+                    <IconSymbol name="lock.fill" size={20} color="#6b7280" style={styles.inputIcon} />
+                    <RNTextInput
+                      placeholder="Password"
+                      secureTextEntry={!showPassword}
+                      style={styles.input}
+                      placeholderTextColor="#9ca3af"
+                      onChangeText={handleChange('password')}
+                      onBlur={handleBlur('password')}
+                      value={values.password}
+                    />
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                      <IconSymbol
+                        name={showPassword ? 'eye.slash.fill' : 'eye.fill'}
+                        size={20}
+                        color="#6b7280"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  {touched.password && errors.password ? (
+                    <View style={styles.errorContainer}>
+                      <IconSymbol name="exclamationmark.circle" size={16} color="#ef4444" />
+                      <Text style={styles.errorText}>{errors.password}</Text>
+                    </View>
+                  ) : null}
+                </View>
+
+                {/* Default Credentials Info */}
+                <View style={styles.credentialsInfo}>
+                  <IconSymbol name="info.circle.fill" size={16} color="#6366f1" />
+                  <Text style={styles.credentialsText}>
+                    Default: <Text style={styles.credentialsBold}>emilys / emilyspass</Text>
+                  </Text>
+                </View>
+
+                {/* Login Button */}
+                <TouchableOpacity
+                  onPress={() => handleSubmit()}
+                  disabled={isSubmitting}
+                  style={[styles.loginButton, isSubmitting && styles.loginButtonDisabled]}>
+                  {isSubmitting ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <LinearGradient
+                      colors={['#6366f1', '#8b5cf6']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.loginGradient}>
+                      <Text style={styles.loginButtonText}>Sign In</Text>
+                      <IconSymbol name="arrow.right" size={20} color="#fff" />
+                    </LinearGradient>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+          </Formik>
+
+          {/* Footer Text */}
+          <TouchableOpacity onPress={() => router.push('/auth/Register')}>
+            <Text style={styles.footerText}>
+              Don't have an account? <Text style={styles.signupLink}>Sign Up</Text>
+            </Text>
+          </TouchableOpacity>
+        </BlurView>
+      </ScrollView>
+    </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, justifyContent: 'center' },
-  input: { borderWidth: 1, padding: 12, borderRadius: 8, marginBottom: 8 },
-  title: { fontSize: 20, marginBottom: 12 },
-  error: { color: '#b91c1c', marginBottom: 8 },
+  backgroundImage: {
+    flex: 1,
+    width: width,
+    height: height,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+  },
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  header: {
+    paddingTop: 40,
+    paddingBottom: 50,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  logoContainer: {
+    alignItems: 'center',
+  },
+  iconCircle: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+    borderWidth: 3,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  appName: {
+    fontSize: 48,
+    fontWeight: '900',
+    color: '#fff',
+    marginBottom: 12,
+    letterSpacing: 2,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 4 },
+    textShadowRadius: 10,
+  },
+  tagline: {
+    fontSize: 17,
+    color: 'rgba(255, 255, 255, 0.95)',
+    fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+    marginBottom: 16,
+  },
+  decorativeLine: {
+    width: 60,
+    height: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: 2,
+    marginTop: 8,
+  },
+  formCard: {
+    margin: 24,
+    borderRadius: 28,
+    padding: 32,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.5,
+    shadowRadius: 24,
+    elevation: 15,
+  },
+  welcomeText: {
+    fontSize: 30,
+    fontWeight: '800',
+    color: '#fff',
+    marginBottom: 8,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginBottom: 32,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  form: {
+    marginBottom: 24,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    height: 58,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  inputIcon: {
+    marginRight: 12,
+    opacity: 0.9,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: '500',
+  },
+  eyeIcon: {
+    padding: 4,
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    marginLeft: 4,
+    gap: 6,
+  },
+  errorText: {
+    color: '#ff6b6b',
+    fontSize: 13,
+    fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  credentialsInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(147, 197, 253, 0.25)',
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 24,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(147, 197, 253, 0.4)',
+  },
+  credentialsText: {
+    fontSize: 13,
+    color: '#fff',
+    flex: 1,
+    fontWeight: '500',
+  },
+  credentialsBold: {
+    fontWeight: '800',
+    color: '#fff',
+  },
+  loginButton: {
+    height: 60,
+    borderRadius: 16,
+    overflow: 'hidden',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+  },
+  loginButtonDisabled: {
+    opacity: 0.5,
+  },
+  loginGradient: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  loginButtonText: {
+    color: '#fff',
+    fontSize: 19,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  footerText: {
+    textAlign: 'center',
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 16,
+    fontWeight: '500',
+  },
+  signupLink: {
+    color: '#93c5fd',
+    fontWeight: '800',
+  },
 });
