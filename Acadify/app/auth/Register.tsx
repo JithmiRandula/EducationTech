@@ -101,12 +101,9 @@ export default function RegisterScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
           
-          {/* Cinematic Header with Blur Effect */}
+          {/* Cinematic Header */}
           <View style={styles.header}>
             <View style={styles.logoContainer}>
-              <View style={styles.iconCircle}>
-                <IconSymbol name="person.badge.plus.fill" size={52} color="#fff" />
-              </View>
               <Text style={styles.appName}>Join UniReads</Text>
               <Text style={styles.tagline}>Start Your Learning Journey Today</Text>
               <View style={styles.decorativeLine} />
@@ -129,7 +126,7 @@ export default function RegisterScreen() {
                   {/* Username Input */}
                   <View style={styles.inputContainer}>
                     <View style={styles.inputWrapper}>
-                      <IconSymbol name="person.fill" size={20} color="#6b7280" style={styles.inputIcon} />
+                      <IconSymbol name="person.fill" size={20} color="#4bee84ff" style={styles.inputIcon} />
                       <RNTextInput
                         placeholder="Username"
                         autoCapitalize="none"
@@ -151,7 +148,7 @@ export default function RegisterScreen() {
                   {/* Email Input */}
                   <View style={styles.inputContainer}>
                     <View style={styles.inputWrapper}>
-                      <IconSymbol name="envelope.fill" size={20} color="#6b7280" style={styles.inputIcon} />
+                      <IconSymbol name="envelope.fill" size={20} color="#4ade80" style={styles.inputIcon} />
                       <RNTextInput
                         placeholder="Email Address"
                         keyboardType="email-address"
@@ -174,7 +171,7 @@ export default function RegisterScreen() {
                   {/* Password Input */}
                   <View style={styles.inputContainer}>
                     <View style={styles.inputWrapper}>
-                      <IconSymbol name="lock.fill" size={20} color="#6b7280" style={styles.inputIcon} />
+                      <IconSymbol name="lock.fill" size={20} color="#4ade80" style={styles.inputIcon} />
                       <RNTextInput
                         placeholder="Password"
                         secureTextEntry={!showPassword}
@@ -188,7 +185,7 @@ export default function RegisterScreen() {
                         <IconSymbol
                           name={showPassword ? 'eye.slash.fill' : 'eye.fill'}
                           size={20}
-                          color="#6b7280"
+                          color="#9ca3af"
                         />
                       </TouchableOpacity>
                     </View>
@@ -203,7 +200,7 @@ export default function RegisterScreen() {
                   {/* Confirm Password Input */}
                   <View style={styles.inputContainer}>
                     <View style={styles.inputWrapper}>
-                      <IconSymbol name="lock.fill" size={20} color="#6b7280" style={styles.inputIcon} />
+                      <IconSymbol name="lock.fill" size={20} color="#4ade80" style={styles.inputIcon} />
                       <RNTextInput
                         placeholder="Confirm Password"
                         secureTextEntry={!showConfirmPassword}
@@ -219,7 +216,7 @@ export default function RegisterScreen() {
                         <IconSymbol
                           name={showConfirmPassword ? 'eye.slash.fill' : 'eye.fill'}
                           size={20}
-                          color="#6b7280"
+                          color="#9ca3af"
                         />
                       </TouchableOpacity>
                     </View>
@@ -233,14 +230,14 @@ export default function RegisterScreen() {
 
                   {/* Terms & Conditions Info */}
                   <View style={styles.termsInfo}>
-                    <IconSymbol name="checkmark.shield.fill" size={16} color="#10b981" />
+                    <IconSymbol name="checkmark.shield.fill" size={18} color="#22c55e" />
                     <Text style={styles.termsText}>
                       By signing up, you agree to our{' '}
                       <Text style={styles.termsLink}>Terms & Conditions</Text>
                     </Text>
                   </View>
 
-                  {/* Sign Up Button */}
+                  {/* Sign Up Button with Glass Effect */}
                   <TouchableOpacity
                     onPress={() => handleSubmit()}
                     disabled={isSubmitting}
@@ -248,14 +245,16 @@ export default function RegisterScreen() {
                     {isSubmitting ? (
                       <ActivityIndicator color="#fff" />
                     ) : (
-                      <LinearGradient
-                        colors={['#10b981', '#059669']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={styles.signupGradient}>
-                        <Text style={styles.signupButtonText}>Sign Up</Text>
-                        <IconSymbol name="arrow.right" size={20} color="#fff" />
-                      </LinearGradient>
+                      <BlurView intensity={90} tint="light" style={styles.signupBlurView}>
+                        <LinearGradient
+                          colors={['rgba(34, 197, 94, 0.8)', 'rgba(22, 163, 74, 0.9)', 'rgba(21, 128, 61, 0.95)']}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          style={styles.signupGradient}>
+                          <Text style={styles.signupButtonText}>Sign Up</Text>
+                          <IconSymbol name="arrow.right.circle.fill" size={22} color="#fff" />
+                        </LinearGradient>
+                      </BlurView>
                     )}
                   </TouchableOpacity>
                 </View>
@@ -302,48 +301,38 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
   },
-  iconCircle: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
-    borderWidth: 3,
-    borderColor: 'rgba(16, 185, 129, 0.5)',
-    shadowColor: '#10b981',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 10,
-  },
   appName: {
-    fontSize: 44,
+    fontSize: 48,
     fontWeight: '900',
     color: '#fff',
-    marginBottom: 12,
-    letterSpacing: 2,
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    marginBottom: 10,
+    letterSpacing: 1.5,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
     textShadowOffset: { width: 0, height: 4 },
-    textShadowRadius: 10,
+    textShadowRadius: 12,
   },
   tagline: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.95)',
+    fontSize: 17,
+    color: 'rgba(255, 255, 255, 0.98)',
     fontWeight: '600',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-    marginBottom: 16,
+    textShadowColor: 'rgba(0, 0, 0, 0.6)',
+    textShadowOffset: { width: 0, height: 3 },
+    textShadowRadius: 6,
+    marginBottom: 14,
     textAlign: 'center',
+    paddingHorizontal: 20,
   },
   decorativeLine: {
-    width: 60,
-    height: 3,
-    backgroundColor: '#10b981',
-    borderRadius: 2,
+    width: 80,
+    height: 4,
+    backgroundColor: '#22c55e',
+    borderRadius: 3,
     marginTop: 8,
+    shadowColor: '#22c55e',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
   },
   formCard: {
     margin: 24,
@@ -422,37 +411,43 @@ const styles = StyleSheet.create({
   termsInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    padding: 12,
-    borderRadius: 14,
+    backgroundColor: 'rgba(34, 197, 94, 0.25)',
+    padding: 14,
+    borderRadius: 16,
     marginBottom: 24,
-    gap: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.4)',
+    gap: 10,
+    borderWidth: 1.5,
+    borderColor: 'rgba(74, 222, 128, 0.5)',
   },
   termsText: {
     fontSize: 12,
     color: '#fff',
     flex: 1,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   termsLink: {
-    fontWeight: '800',
-    color: '#10b981',
+    fontWeight: '900',
+    color: '#4ade80',
     textDecorationLine: 'underline',
   },
   signupButton: {
-    height: 60,
-    borderRadius: 16,
+    height: 62,
+    borderRadius: 18,
     overflow: 'hidden',
-    elevation: 8,
-    shadowColor: '#10b981',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
+    elevation: 12,
+    shadowColor: '#22c55e',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+    borderWidth: 2,
+    borderColor: 'rgba(74, 222, 128, 0.4)',
   },
   signupButtonDisabled: {
     opacity: 0.5,
+  },
+  signupBlurView: {
+    flex: 1,
+    overflow: 'hidden',
   },
   signupGradient: {
     flex: 1,
@@ -460,22 +455,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
+    paddingVertical: 4,
   },
   signupButtonText: {
     color: '#fff',
-    fontSize: 19,
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    fontSize: 20,
+    fontWeight: '900',
+    letterSpacing: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   footerText: {
     textAlign: 'center',
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginTop: 16,
-    fontWeight: '500',
+    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginTop: 20,
+    fontWeight: '600',
   },
   loginLink: {
-    color: '#10b981',
-    fontWeight: '800',
+    color: '#4ade80',
+    fontWeight: '900',
   },
 });

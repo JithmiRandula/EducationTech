@@ -145,7 +145,7 @@ export default function LoginScreen() {
                 {/* Username Input */}
                 <View style={styles.inputContainer}>
                   <View style={styles.inputWrapper}>
-                    <IconSymbol name="person.fill" size={20} color="#6b7280" style={styles.inputIcon} />
+                    <IconSymbol name="person.fill" size={20} color="#60a5fa" style={styles.inputIcon} />
                     <RNTextInput
                       placeholder="Username"
                       autoCapitalize="none"
@@ -167,7 +167,7 @@ export default function LoginScreen() {
                 {/* Password Input */}
                 <View style={styles.inputContainer}>
                   <View style={styles.inputWrapper}>
-                    <IconSymbol name="lock.fill" size={20} color="#6b7280" style={styles.inputIcon} />
+                    <IconSymbol name="lock.fill" size={20} color="#60a5fa" style={styles.inputIcon} />
                     <RNTextInput
                       placeholder="Password"
                       secureTextEntry={!showPassword}
@@ -195,13 +195,13 @@ export default function LoginScreen() {
 
                 {/* Default Credentials Info */}
                 <View style={styles.credentialsInfo}>
-                  <IconSymbol name="info.circle.fill" size={16} color="#6366f1" />
+                  <IconSymbol name="info.circle.fill" size={16} color="#3b82f6" />
                   <Text style={styles.credentialsText}>
                     Default: <Text style={styles.credentialsBold}>emilys / emilyspass</Text>
                   </Text>
                 </View>
 
-                {/* Login Button */}
+                {/* Login Button with Glass Effect */}
                 <TouchableOpacity
                   onPress={() => handleSubmit()}
                   disabled={isSubmitting}
@@ -209,14 +209,16 @@ export default function LoginScreen() {
                   {isSubmitting ? (
                     <ActivityIndicator color="#fff" />
                   ) : (
-                    <LinearGradient
-                      colors={['#6366f1', '#8b5cf6']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={styles.loginGradient}>
-                      <Text style={styles.loginButtonText}>Sign In</Text>
-                      <IconSymbol name="arrow.right" size={20} color="#fff" />
-                    </LinearGradient>
+                    <BlurView intensity={90} tint="light" style={styles.loginBlurView}>
+                      <LinearGradient
+                        colors={['rgba(59, 130, 246, 0.8)', 'rgba(37, 99, 235, 0.9)', 'rgba(29, 78, 216, 0.95)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.loginGradient}>
+                        <Text style={styles.loginButtonText}>Sign In</Text>
+                        <IconSymbol name="arrow.right.circle.fill" size={22} color="#fff" />
+                      </LinearGradient>
+                    </BlurView>
                   )}
                 </TouchableOpacity>
               </View>
@@ -382,36 +384,42 @@ const styles = StyleSheet.create({
   credentialsInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(147, 197, 253, 0.25)',
+    backgroundColor: 'rgba(59, 130, 246, 0.25)',
     padding: 14,
-    borderRadius: 14,
+    borderRadius: 16,
     marginBottom: 24,
-    gap: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(147, 197, 253, 0.4)',
+    gap: 10,
+    borderWidth: 1.5,
+    borderColor: 'rgba(96, 165, 250, 0.5)',
   },
   credentialsText: {
     fontSize: 13,
     color: '#fff',
     flex: 1,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   credentialsBold: {
-    fontWeight: '800',
-    color: '#fff',
+    fontWeight: '900',
+    color: '#60a5fa',
   },
   loginButton: {
-    height: 60,
-    borderRadius: 16,
+    height: 62,
+    borderRadius: 18,
     overflow: 'hidden',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
+    elevation: 12,
+    shadowColor: '#3b82f6',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+    borderWidth: 2,
+    borderColor: 'rgba(96, 165, 250, 0.4)',
   },
   loginButtonDisabled: {
     opacity: 0.5,
+  },
+  loginBlurView: {
+    flex: 1,
+    overflow: 'hidden',
   },
   loginGradient: {
     flex: 1,
@@ -419,22 +427,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
+    paddingVertical: 4,
   },
   loginButtonText: {
     color: '#fff',
-    fontSize: 19,
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    fontSize: 20,
+    fontWeight: '900',
+    letterSpacing: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   footerText: {
     textAlign: 'center',
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginTop: 16,
-    fontWeight: '500',
+    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginTop: 20,
+    fontWeight: '600',
   },
   signupLink: {
-    color: '#93c5fd',
-    fontWeight: '800',
+    color: '#60a5fa',
+    fontWeight: '900',
   },
 });
