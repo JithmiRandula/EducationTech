@@ -11,11 +11,11 @@ const rootReducer = combineReducers({
   favorites: favoritesReducer,
 });
 
-// Persist config: persist favorites and user if needed
+// Persist config: persist both favorites and user
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['favorites'], // persist only favorites (token/user can be handled separately)
+  whitelist: ['favorites', 'user'], // persist both favorites and user data
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
