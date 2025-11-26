@@ -8,13 +8,17 @@ import {
   ActivityIndicator,
   RefreshControl,
   TouchableOpacity,
+  ScrollView,
+  Image,
 } from 'react-native';
-import { useAppDispatch } from '@/store/hooks';
+import { useRouter } from 'expo-router';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { addFavorite } from '@/store/slices/favoritesSlice';
-import BookCard, { Book } from '@/components/BookCard';
+import { Book } from '@/components/BookCard';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/colors';
 import { useTheme } from '@/contexts/ThemeContext';
+import type { RootState } from '@/store/store';
 
 /**
  * Home Screen for UniReads
@@ -24,87 +28,104 @@ import { useTheme } from '@/contexts/ThemeContext';
  * - Shows loading and error states
  * - Allows adding books to favorites
  */
+// Category type
+type Category = {
+  name: string;
+  books: Book[];
+};
+
 export default function Home() {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const { colors } = useTheme();
   
+  // Get favorites from Redux
+  const favorites = useAppSelector((state: RootState) => (state as any).favorites?.items || []);
+  
   // State management
-  const [searchQuery, setSearchQuery] = useState('javascript'); // Default search term
-  const [books, setBooks] = useState<Book[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   /**
-   * Fetch books from Open Library search API
-   * @param query - Search term (e.g., "python", "react")
-   * @param isRefresh - Whether this is a pull-to-refresh action
+   * Fetch books and organize by subjects
    */
-  const fetchBooks = useCallback(async (query: string, isRefresh = false) => {
-    if (!query.trim()) return;
-
-    // Set appropriate loading state
-    if (isRefresh) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-    setError(null);
-
+  const fetchBooksWithSubjects = useCallback(async () => {
     try {
-      const response = await fetch(
-        `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=20`
-      );
+      // Technology and education related search queries
+      const queries = [
+        'programming', 'computer science', 'artificial intelligence', 'machine learning', 'web development',
+        'data science', 'software engineering', 'cybersecurity', 'technology', 'networking',
+        'database', 'cloud computing', 'mobile development', 'algorithms', 'python programming'
+      ];
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      // Fetch books for multiple queries in parallel
+      const fetchPromises = queries.map(async (query) => {
+        try {
+          const response = await fetch(
+            `https://openlibrary.org/search.json?q=${query}&limit=15`
+          );
+          
+          if (!response.ok) return { query, books: [] };
+          
+          const data = await response.json();
+          const books = (data.docs || []).map((doc: any) => ({
+            key: doc.key,
+            title: doc.title,
+            author_name: doc.author_name,
+            cover_i: doc.cover_i,
+            first_publish_year: doc.first_publish_year,
+            edition_count: doc.edition_count,
+          }));
+          
+          return { query, books };
+        } catch {
+          return { query, books: [] };
+        }
+      });
 
-      const data = await response.json();
+      const results = await Promise.all(fetchPromises);
       
-      // Extract relevant book data from API response
-      const fetchedBooks: Book[] = (data.docs || []).map((doc: any) => ({
-        key: doc.key,
-        title: doc.title,
-        author_name: doc.author_name,
-        cover_i: doc.cover_i,
-        first_publish_year: doc.first_publish_year,
-        edition_count: doc.edition_count,
-      }));
+      // Convert to categories, capitalize first letter
+      const categoryList: Category[] = results
+        .filter(result => result.books.length > 0)
+        .map(result => ({
+          name: result.query.charAt(0).toUpperCase() + result.query.slice(1),
+          books: result.books,
+        }));
 
-      setBooks(fetchedBooks);
+      setCategories(categoryList);
+      
+      // Set first category as selected
+      if (categoryList.length > 0 && !selectedCategory) {
+        setSelectedCategory(categoryList[0].name);
+      }
     } catch (err) {
       console.error('Error fetching books:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch books');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
     }
-  }, []);
+  }, [selectedCategory]);
 
-  // Fetch initial books on mount
+  // Fetch books on mount
   React.useEffect(() => {
-    fetchBooks(searchQuery);
+    setLoading(true);
+    fetchBooksWithSubjects().finally(() => setLoading(false));
   }, []);
-
-  // Handle search button press
-  const handleSearch = () => {
-    fetchBooks(searchQuery);
-  };
 
   // Handle pull-to-refresh
   const handleRefresh = () => {
-    fetchBooks(searchQuery, true);
+    setRefreshing(true);
+    fetchBooksWithSubjects().finally(() => setRefreshing(false));
   };
 
-  // Handle adding book to favorites
-  const handleFavoritePress = (book: Book) => {
-    dispatch(addFavorite(book));
-    // Optional: Show a toast/snackbar notification
+  // Navigate to book details
+  const handleBookPress = (book: Book) => {
+    const workId = book.key.split('/').pop() || book.key;
+    router.push(`/home/Details?workId=${workId}`);
   };
 
   // Render loading state
-  if (loading && books.length === 0) {
+  if (loading && categories.length === 0) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -113,65 +134,132 @@ export default function Home() {
     );
   }
 
-  // Render error state
-  if (error && books.length === 0) {
-    return (
-      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
-        <IconSymbol name="exclamationmark.triangle" size={48} color={colors.error} />
-        <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
-        <TouchableOpacity style={[styles.retryButton, { backgroundColor: colors.primary }]} onPress={() => fetchBooks(searchQuery)}>
-          <Text style={styles.retryButtonText}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Search Bar */}
-      <View style={[styles.searchContainer, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border }]}>
-        <View style={[styles.searchInputContainer, { backgroundColor: colors.surface }]}>
-          <IconSymbol name="magnifyingglass" size={20} color={colors.textSecondary} style={styles.searchIcon} />
-          <TextInput
-            style={[styles.searchInput, { color: colors.text }]}
-            placeholder="Search books..."
-            placeholderTextColor={colors.placeholder}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            onSubmitEditing={handleSearch}
-            returnKeyType="search"
-          />
-        </View>
-        <TouchableOpacity style={[styles.searchButton, { backgroundColor: colors.primary }]} onPress={handleSearch}>
-          <Text style={styles.searchButtonText}>Search</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Books List */}
-      <FlatList
-        data={books}
-        keyExtractor={(item) => item.key}
-        renderItem={({ item }) => (
-          <BookCard book={item} onFavoritePress={handleFavoritePress} />
-        )}
-        contentContainerStyle={styles.listContainer}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            colors={[colors.primary]}
-            tintColor={colors.primary}
-          />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <IconSymbol name="book" size={48} color={colors.textTertiary} />
-            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No books found</Text>
-            <Text style={[styles.emptySubtext, { color: colors.textTertiary }]}>Try a different search term</Text>
+    <ScrollView 
+      style={[styles.container, { backgroundColor: colors.background }]}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          colors={[colors.primary]}
+          tintColor={colors.primary}
+        />
+      }>
+      
+      {/* My Books Section */}
+      {favorites.length > 0 && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>My books</Text>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/favorites')}>
+              <Text style={[styles.seeAllText, { color: colors.primary }]}>See all</Text>
+            </TouchableOpacity>
           </View>
-        }
-      />
-    </View>
+          
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+            {favorites.slice(0, 3).map((book: Book) => (
+              <TouchableOpacity
+                key={book.key}
+                style={[styles.myBookCard, { backgroundColor: colors.cardBackground }]}
+                onPress={() => handleBookPress(book)}
+                activeOpacity={0.7}>
+                <Image
+                  source={{ 
+                    uri: book.cover_i 
+                      ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`
+                      : 'https://via.placeholder.com/120x180'
+                  }}
+                  style={styles.myBookCover}
+                  resizeMode="cover"
+                />
+                <View style={styles.myBookInfo}>
+                  <Text style={[styles.myBookTitle, { color: colors.text }]} numberOfLines={2}>
+                    {book.title}
+                  </Text>
+                  <Text style={[styles.myBookAuthor, { color: colors.textSecondary }]} numberOfLines={1}>
+                    {book.author_name?.[0] || 'Unknown Author'}
+                  </Text>
+                  <View style={styles.progressContainer}>
+                    <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>Progress</Text>
+                    <Text style={[styles.progressPercent, { color: colors.text }]}>75%</Text>
+                  </View>
+                  <View style={styles.progressBar}>
+                    <View style={[styles.progressFill, { backgroundColor: colors.primary }]} />
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* For You Section */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>For you</Text>
+          <TouchableOpacity>
+            <IconSymbol name="slider.horizontal.3" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Category Tabs */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
+          {categories.map((category, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.categoryTab,
+                selectedCategory === category.name && styles.categoryTabActive,
+                selectedCategory === category.name && { backgroundColor: colors.primary },
+                selectedCategory !== category.name && { backgroundColor: colors.surface }
+              ]}
+              onPress={() => setSelectedCategory(category.name)}
+              activeOpacity={0.7}>
+              <Text
+                style={[
+                  styles.categoryText,
+                  selectedCategory === category.name && styles.categoryTextActive,
+                  selectedCategory === category.name && { color: Colors.cream },
+                  selectedCategory !== category.name && { color: colors.textSecondary }
+                ]}>
+                {category.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Category Books */}
+        {categories.map((category, index) => (
+          selectedCategory === category.name && (
+            <ScrollView key={index} horizontal showsHorizontalScrollIndicator={false} style={styles.booksScroll}>
+              {category.books.map((book: Book) => (
+                <TouchableOpacity
+                  key={book.key}
+                  style={styles.bookItem}
+                  onPress={() => handleBookPress(book)}
+                  activeOpacity={0.7}>
+                  <Image
+                    source={{ 
+                      uri: book.cover_i 
+                        ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`
+                        : 'https://via.placeholder.com/120x180'
+                    }}
+                    style={styles.bookCover}
+                    resizeMode="cover"
+                  />
+                  <Text style={[styles.bookTitle, { color: colors.text }]} numberOfLines={2}>
+                    {book.title}
+                  </Text>
+                  <Text style={[styles.bookAuthor, { color: colors.textSecondary }]} numberOfLines={1}>
+                    {book.author_name?.[0] || 'Unknown'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )
+        ))}
+      </View>
+    </ScrollView>
   );
 }
 
@@ -194,63 +282,119 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
   },
-  retryButton: {
-    marginTop: 16,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+  section: {
+    marginTop: 20,
+    paddingHorizontal: 16,
   },
-  retryButtonText: {
-    color: Colors.cream,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  searchContainer: {
+  sectionHeader: {
     flexDirection: 'row',
-    padding: 16,
-    borderBottomWidth: 1,
-    gap: 8,
-  },
-  searchInputContainer: {
-    flex: 1,
-    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    marginBottom: 16,
   },
-  searchIcon: {
-    marginRight: 8,
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: '700',
   },
-  searchInput: {
-    flex: 1,
-    height: 44,
-    fontSize: 16,
-  },
-  searchButton: {
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchButtonText: {
-    color: Colors.cream,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  listContainer: {
-    padding: 16,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    paddingTop: 60,
-  },
-  emptyText: {
-    marginTop: 12,
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  emptySubtext: {
-    marginTop: 4,
+  seeAllText: {
     fontSize: 14,
+    fontWeight: '600',
+  },
+  horizontalScroll: {
+    marginHorizontal: -16,
+    paddingHorizontal: 16,
+  },
+  myBookCard: {
+    width: 140,
+    marginRight: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  myBookCover: {
+    width: '100%',
+    height: 200,
+  },
+  myBookInfo: {
+    padding: 12,
+  },
+  myBookTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  myBookAuthor: {
+    fontSize: 12,
+    marginBottom: 8,
+  },
+  progressContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  progressLabel: {
+    fontSize: 11,
+  },
+  progressPercent: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    width: '75%',
+    height: '100%',
+  },
+  categoryScroll: {
+    marginHorizontal: -16,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  categoryTab: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  categoryTabActive: {
+    // backgroundColor set dynamically
+  },
+  categoryText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  categoryTextActive: {
+    // color set dynamically
+  },
+  booksScroll: {
+    marginHorizontal: -16,
+    paddingHorizontal: 16,
+  },
+  bookItem: {
+    width: 120,
+    marginRight: 16,
+  },
+  bookCover: {
+    width: 120,
+    height: 180,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  bookTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  bookAuthor: {
+    fontSize: 11,
   },
 });
