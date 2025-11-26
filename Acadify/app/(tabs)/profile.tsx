@@ -107,13 +107,13 @@ export default function Profile() {
                 <IconSymbol 
                   name={isDark ? 'moon.fill' : 'sun.max.fill'} 
                   size={24} 
-                  color={isDark ? Colors.olive : Colors.primary} 
+                  color={isDark ? '#fbbf24' : '#f59e0b'} 
                 />
               </View>
               <View style={styles.settingTextContainer}>
-                <Text style={[styles.settingTitle, { color: colors.text }]}>Dark Mode</Text>
+                <Text style={[styles.settingTitle, { color: colors.text }]}>{isDark ? 'Dark Mode' : 'Light Mode'}</Text>
                 <Text style={[styles.settingSubtitle, { color: colors.textSecondary }]}>
-                  {isDark ? 'Dark theme enabled' : 'Light theme enabled'}
+                  Adjust app appearance
                 </Text>
               </View>
             </View>
