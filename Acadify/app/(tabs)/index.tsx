@@ -55,9 +55,9 @@ export default function Home() {
     try {
       // Technology and education related search queries
       const queries = [
-        'programming', 'computer science', 'artificial intelligence', 'machine learning', 'web development',
-        'data science', 'software engineering', 'cybersecurity', 'technology', 'networking',
-        'database', 'cloud computing', 'mobile development', 'algorithms', 'python programming'
+        'computer science', 'artificial intelligence', 'machine learning', 'web development',
+        'data science', 'software engineering', 'cybersecurity',
+        'cloud computing', 'mobile development', 'algorithms', 'python programming'
       ];
 
       // Fetch books for multiple queries in parallel
@@ -173,18 +173,17 @@ export default function Home() {
                   resizeMode="cover"
                 />
                 <View style={styles.myBookInfo}>
-                  <Text style={[styles.myBookTitle, { color: colors.text }]} numberOfLines={2}>
+                  <Text style={[styles.myBookTitle, { color: colors.text }]} numberOfLines={1}>
                     {book.title}
                   </Text>
                   <Text style={[styles.myBookAuthor, { color: colors.textSecondary }]} numberOfLines={1}>
                     {book.author_name?.[0] || 'Unknown Author'}
                   </Text>
                   <View style={styles.progressContainer}>
-                    <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>Progress</Text>
+                    <View style={styles.progressBar}>
+                      <View style={[styles.progressFill, { backgroundColor: colors.primary }]} />
+                    </View>
                     <Text style={[styles.progressPercent, { color: colors.text }]}>75%</Text>
-                  </View>
-                  <View style={styles.progressBar}>
-                    <View style={[styles.progressFill, { backgroundColor: colors.primary }]} />
                   </View>
                 </View>
               </TouchableOpacity>
@@ -305,7 +304,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   myBookCard: {
-    width: 140,
+    flexDirection: 'row',
+    width: 280,
+    height: 120,
     marginRight: 16,
     borderRadius: 12,
     overflow: 'hidden',
@@ -316,16 +317,18 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   myBookCover: {
-    width: '100%',
-    height: 200,
+    width: 80,
+    height: 120,
   },
   myBookInfo: {
+    flex: 1,
     padding: 12,
+    justifyContent: 'space-between',
   },
   myBookTitle: {
     fontSize: 14,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   myBookAuthor: {
     fontSize: 12,
@@ -333,9 +336,8 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
+    gap: 8,
   },
   progressLabel: {
     fontSize: 11,
@@ -343,11 +345,14 @@ const styles = StyleSheet.create({
   progressPercent: {
     fontSize: 11,
     fontWeight: '600',
+    minWidth: 35,
+    textAlign: 'right',
   },
   progressBar: {
-    height: 4,
+    flex: 1,
+    height: 6,
     backgroundColor: '#E0E0E0',
-    borderRadius: 2,
+    borderRadius: 3,
     overflow: 'hidden',
   },
   progressFill: {
