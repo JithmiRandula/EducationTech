@@ -208,6 +208,7 @@ export default function Home() {
               <Text style={[styles.seeAllText, { color: colors.primary }]}>See all</Text>
             </TouchableOpacity>
           </View>
+          <View style={[styles.underline, { backgroundColor: colors.primary }]} />
           
           <ScrollView 
             horizontal 
@@ -268,6 +269,7 @@ export default function Home() {
             <IconSymbol name="slider.horizontal.3" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
+        <View style={[styles.underline, { backgroundColor: colors.primary }]} />
 
         {/* Category Tabs */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
@@ -387,11 +389,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   sectionTitle: {
     fontSize: 22,
     fontWeight: '700',
+  },
+  underline: {
+    height: 1,
+    width: '100%',
+    marginBottom: 16,
   },
   seeAllText: {
     fontSize: 14,
