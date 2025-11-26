@@ -44,6 +44,9 @@ export default function Favorites() {
 
   // Get favorites from Redux store
   const favorites = useAppSelector((state: RootState) => (state as any).favorites?.items || []);
+  
+  // State for showing limited items
+  const [visibleCount, setVisibleCount] = React.useState(5);
 
   /**
    * Navigate to Details screen with the selected book's work ID
@@ -150,6 +153,15 @@ export default function Favorites() {
     </View>
   );
 
+  // Get visible favorites
+  const visibleFavorites = favorites.slice(0, visibleCount);
+  const hasMore = favorites.length > visibleCount;
+
+  // Handle show more
+  const handleShowMore = () => {
+    setVisibleCount(prevCount => prevCount + 5);
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {favorites.length === 0 ? (
@@ -166,11 +178,22 @@ export default function Favorites() {
 
           {/* Favorites List */}
           <FlatList
-            data={favorites}
+            data={visibleFavorites}
             keyExtractor={(item) => item.key}
             renderItem={renderBookCard}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
+            ListFooterComponent={
+              hasMore ? (
+                <TouchableOpacity
+                  style={[styles.showMoreButton, { backgroundColor: colors.primary }]}
+                  onPress={handleShowMore}
+                  activeOpacity={0.8}>
+                  <Text style={styles.showMoreText}>Show More</Text>
+                  <IconSymbol name="chevron.down" size={18} color={Colors.cream} />
+                </TouchableOpacity>
+              ) : null
+            }
           />
         </>
       )}
@@ -285,6 +308,28 @@ const styles = StyleSheet.create({
   exploreButtonText: {
     color: Colors.cream,
     fontSize: 16,
+    fontWeight: '600',
+  },
+  showMoreButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    marginTop: 8,
+    marginBottom: 8,
+    alignSelf: 'center',
+    gap: 4,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+  },
+  showMoreText: {
+    color: Colors.cream,
+    fontSize: 12,
     fontWeight: '600',
   },
 });

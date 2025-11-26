@@ -190,12 +190,12 @@ export default function Home() {
       {/* Hero Section */}
       <View style={styles.heroSection}>
         <Image
-          source={require('@/assets/images/book2.jpg')}
+          source={require('@/assets/images/books9.jpg')}
           style={styles.heroImage}
           resizeMode="cover"
         />
         <View style={styles.heroOverlay}>
-          <Text style={styles.heroTitle}>UniReads</Text>
+          
         </View>
       </View>
       
