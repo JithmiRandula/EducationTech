@@ -200,18 +200,20 @@ export default function Profile() {
 
       {/* Logout Button */}
       <TouchableOpacity 
-        style={[styles.logoutButton, { backgroundColor: Colors.error }]}
+        style={[styles.logoutButton, { backgroundColor: '#e74c3c' }]}
         onPress={handleLogout}
         activeOpacity={0.8}
       >
-        <IconSymbol name="rectangle.portrait.and.arrow.right" size={22} color={Colors.cream} />
+        <IconSymbol name="rectangle.portrait.and.arrow.right" size={20} color={Colors.cream} />
         <Text style={styles.logoutButtonText}>Logout</Text>
       </TouchableOpacity>
 
       {/* Footer */}
-      <Text style={[styles.footer, { color: colors.textTertiary }]}>
-        Made with ❤️ for UniReads
-      </Text>
+      <View style={styles.footerContainer}>
+        <Text style={[styles.footer, { color: colors.textTertiary }]}>Made with </Text>
+        <IconSymbol name="heart.fill" size={14} color={colors.textTertiary} />
+        <Text style={[styles.footer, { color: colors.textTertiary }]}> for UniReads</Text>
+      </View>
     </ScrollView>
   );
 }
@@ -296,18 +298,29 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginHorizontal: 20,
     marginTop: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+    gap: 6,
+    alignSelf: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   logoutButtonText: {
     color: Colors.cream,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
-  footer: {
-    textAlign: 'center',
+  footerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 24,
+  },
+  footer: {
     fontSize: 14,
   },
 });
