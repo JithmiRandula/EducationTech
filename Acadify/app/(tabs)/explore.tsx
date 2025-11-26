@@ -13,6 +13,8 @@ import { useAppDispatch } from '@/store/hooks';
 import { addFavorite } from '@/store/slices/favoritesSlice';
 import BookCard, { Book } from '@/components/BookCard';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Colors } from '@/constants/colors';
+import { useTheme } from '@/contexts/ThemeContext';
 
 /**
  * Search Screen for UniReads
@@ -24,6 +26,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
  */
 export default function SearchScreen() {
   const dispatch = useAppDispatch();
+  const { colors } = useTheme();
   
   // State management
   const [searchQuery, setSearchQuery] = useState('javascript'); // Default search term
@@ -102,9 +105,9 @@ export default function SearchScreen() {
   // Render loading state
   if (loading && books.length === 0) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#3b82f6" />
-        <Text style={styles.loadingText}>Searching books...</Text>
+      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Searching books...</Text>
       </View>
     );
   }
@@ -112,10 +115,10 @@ export default function SearchScreen() {
   // Render error state
   if (error && books.length === 0) {
     return (
-      <View style={styles.centerContainer}>
-        <IconSymbol name="exclamationmark.triangle" size={48} color="#ef4444" />
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={() => fetchBooks(searchQuery)}>
+      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <IconSymbol name="exclamationmark.triangle" size={48} color={colors.error} />
+        <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
+        <TouchableOpacity style={[styles.retryButton, { backgroundColor: colors.primary }]} onPress={() => fetchBooks(searchQuery)}>
           <Text style={styles.retryButtonText}>Retry</Text>
         </TouchableOpacity>
       </View>
@@ -123,15 +126,15 @@ export default function SearchScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInputContainer}>
-          <IconSymbol name="magnifyingglass" size={20} color="#6b7280" style={styles.searchIcon} />
+      <View style={[styles.searchContainer, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border }]}>
+        <View style={[styles.searchInputContainer, { backgroundColor: colors.surface }]}>
+          <IconSymbol name="magnifyingglass" size={20} color={colors.textSecondary} style={styles.searchIcon} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: colors.text }]}
             placeholder="Search books, authors, ISBN..."
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={colors.placeholder}
             value={searchQuery}
             onChangeText={setSearchQuery}
             onSubmitEditing={handleSearch}
@@ -139,12 +142,12 @@ export default function SearchScreen() {
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <IconSymbol name="xmark.circle.fill" size={20} color="#9ca3af" />
+              <IconSymbol name="xmark.circle.fill" size={20} color={colors.textTertiary} />
             </TouchableOpacity>
           )}
         </View>
-        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-          <IconSymbol name="arrow.right" size={20} color="#fff" />
+        <TouchableOpacity style={[styles.searchButton, { backgroundColor: colors.primary }]} onPress={handleSearch}>
+          <IconSymbol name="arrow.right" size={20} color={Colors.cream} />
         </TouchableOpacity>
       </View>
 
@@ -160,15 +163,15 @@ export default function SearchScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={['#3b82f6']}
-            tintColor="#3b82f6"
+            colors={[colors.primary]}
+            tintColor={colors.primary}
           />
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <IconSymbol name="magnifyingglass" size={64} color="#9ca3af" />
-            <Text style={styles.emptyText}>No books found</Text>
-            <Text style={styles.emptySubtext}>Try a different search term</Text>
+            <IconSymbol name="magnifyingglass" size={64} color={colors.textTertiary} />
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No books found</Text>
+            <Text style={[styles.emptySubtext, { color: colors.textTertiary }]}>Try a different search term</Text>
           </View>
         }
       />
@@ -179,7 +182,6 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
   },
   centerContainer: {
     flex: 1,
@@ -190,39 +192,33 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#6b7280',
   },
   errorText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#ef4444',
     textAlign: 'center',
   },
   retryButton: {
     marginTop: 16,
-    backgroundColor: '#3b82f6',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
   },
   retryButtonText: {
-    color: '#fff',
+    color: Colors.cream,
     fontSize: 16,
     fontWeight: '600',
   },
   searchContainer: {
     flexDirection: 'row',
     padding: 16,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
     gap: 8,
   },
   searchInputContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f3f4f6',
     borderRadius: 12,
     paddingHorizontal: 12,
     gap: 8,
@@ -234,10 +230,8 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 44,
     fontSize: 16,
-    color: '#1f2937',
   },
   searchButton: {
-    backgroundColor: '#3b82f6',
     width: 44,
     height: 44,
     borderRadius: 12,
@@ -255,11 +249,9 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 18,
     fontWeight: '600',
-    color: '#6b7280',
   },
   emptySubtext: {
     marginTop: 4,
     fontSize: 14,
-    color: '#9ca3af',
   },
 });

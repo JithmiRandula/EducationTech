@@ -13,6 +13,8 @@ import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { removeFavorite } from '@/store/slices/favoritesSlice';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import type { RootState } from '@/store/store';
+import { Colors } from '@/constants/colors';
+import { useTheme } from '@/contexts/ThemeContext';
 
 /**
  * Type definition for a favorite book
@@ -38,6 +40,7 @@ type Book = {
 export default function Favorites() {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { colors } = useTheme();
 
   // Get favorites from Redux store
   const favorites = useAppSelector((state: RootState) => (state as any).favorites?.items || []);
@@ -88,7 +91,7 @@ export default function Favorites() {
 
     return (
       <TouchableOpacity
-        style={styles.card}
+        style={[styles.card, { backgroundColor: colors.cardBackground, shadowColor: colors.text }]}
         onPress={() => handleBookPress(item)}
         activeOpacity={0.7}>
         <View style={styles.cardContent}>
@@ -97,22 +100,22 @@ export default function Favorites() {
             {coverUrl ? (
               <Image source={{ uri: coverUrl }} style={styles.cover} resizeMode="cover" />
             ) : (
-              <View style={[styles.cover, styles.placeholderCover]}>
-                <IconSymbol name="book" size={32} color="#9ca3af" />
+              <View style={[styles.cover, styles.placeholderCover, { backgroundColor: colors.surface }]}>
+                <IconSymbol name="book" size={32} color={colors.textTertiary} />
               </View>
             )}
           </View>
 
           {/* Book Info */}
           <View style={styles.infoContainer}>
-            <Text style={styles.title} numberOfLines={2}>
+            <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
               {item.title}
             </Text>
-            <Text style={styles.author} numberOfLines={1}>
+            <Text style={[styles.author, { color: colors.textSecondary }]} numberOfLines={1}>
               {authors}
             </Text>
             {item.first_publish_year && (
-              <Text style={styles.year}>Published: {item.first_publish_year}</Text>
+              <Text style={[styles.year, { color: colors.textTertiary }]}>Published: {item.first_publish_year}</Text>
             )}
           </View>
 
@@ -121,7 +124,7 @@ export default function Favorites() {
             style={styles.removeButton}
             onPress={() => handleRemoveFavorite(item)}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <IconSymbol name="trash" size={22} color="#ef4444" />
+            <IconSymbol name="trash" size={22} color={colors.error} />
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -133,30 +136,30 @@ export default function Favorites() {
    */
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-      <IconSymbol name="heart" size={64} color="#d1d5db" />
-      <Text style={styles.emptyTitle}>No Favorites Yet</Text>
-      <Text style={styles.emptySubtitle}>
+      <IconSymbol name="heart" size={64} color={colors.textTertiary} />
+      <Text style={[styles.emptyTitle, { color: colors.text }]}>No Favorites Yet</Text>
+      <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
         Books you favorite will appear here.{'\n'}Start exploring to add your first favorite!
       </Text>
       <TouchableOpacity
-        style={styles.exploreButton}
+        style={[styles.exploreButton, { backgroundColor: colors.primary }]}
         onPress={() => router.push('/(tabs)')}>
-        <IconSymbol name="magnifyingglass" size={20} color="#fff" />
+        <IconSymbol name="magnifyingglass" size={20} color={Colors.cream} />
         <Text style={styles.exploreButtonText}>Explore Books</Text>
       </TouchableOpacity>
     </View>
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {favorites.length === 0 ? (
         renderEmptyState()
       ) : (
         <>
           {/* Header with count */}
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>My Favorites</Text>
-            <View style={styles.countBadge}>
+          <View style={[styles.header, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border }]}>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>My Favorites</Text>
+            <View style={[styles.countBadge, { backgroundColor: colors.primary }]}>
               <Text style={styles.countText}>{favorites.length}</Text>
             </View>
           </View>
@@ -178,7 +181,6 @@ export default function Favorites() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
   },
   header: {
     flexDirection: 'row',
@@ -186,17 +188,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
   },
   headerTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#1f2937',
   },
   countBadge: {
-    backgroundColor: '#3b82f6',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
@@ -204,7 +202,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   countText: {
-    color: '#fff',
+    color: Colors.cream,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -212,10 +210,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   card: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     marginBottom: 12,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -235,7 +231,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   placeholderCover: {
-    backgroundColor: '#e5e7eb',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -247,17 +242,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
     marginBottom: 4,
   },
   author: {
     fontSize: 14,
-    color: '#6b7280',
     marginBottom: 4,
   },
   year: {
     fontSize: 12,
-    color: '#9ca3af',
   },
   removeButton: {
     padding: 8,
@@ -273,13 +265,11 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#1f2937',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 16,
-    color: '#6b7280',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 24,
@@ -287,14 +277,13 @@ const styles = StyleSheet.create({
   exploreButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#3b82f6',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 24,
     gap: 8,
   },
   exploreButtonText: {
-    color: '#fff',
+    color: Colors.cream,
     fontSize: 16,
     fontWeight: '600',
   },
