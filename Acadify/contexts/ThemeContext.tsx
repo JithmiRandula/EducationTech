@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Colors } from '@/constants/colors';
 
 /**
  * Theme type definition
@@ -54,60 +55,60 @@ interface ThemeContextType {
 }
 
 /**
- * Light theme color palette
+ * Light theme color palette - Using neutral color scheme
  */
 const lightColors: ThemeColors = {
-  background: '#f9fafb',
-  cardBackground: '#ffffff',
-  surface: '#ffffff',
+  background: Colors.background,        // #FFFBF8 - Cream
+  cardBackground: Colors.card,          // #FFFFFF - White
+  surface: Colors.lightBeige,           // #F5F1ED - Light Beige
   
-  text: '#1f2937',
-  textSecondary: '#6b7280',
-  textTertiary: '#9ca3af',
+  text: Colors.text,                    // #3D3D3D - Dark Olive
+  textSecondary: Colors.textSecondary,  // #6B7062 - Olive
+  textTertiary: Colors.textLight,       // #B0B0B0 - Medium Gray
   
-  primary: '#3b82f6',
-  primaryLight: '#60a5fa',
-  primaryDark: '#2563eb',
+  primary: Colors.primary,              // #6B7062 - Olive
+  primaryLight: Colors.olive,           // #6B7062 - Olive
+  primaryDark: Colors.darkOlive,        // #3D3D3D - Dark Olive
   
   success: '#10b981',
-  error: '#ef4444',
+  error: Colors.error,                  // #DC2626 - Error Red
   warning: '#f59e0b',
-  info: '#3b82f6',
+  info: Colors.primary,
   
-  border: '#e5e7eb',
-  divider: '#e5e7eb',
+  border: Colors.lightGray,             // #D3D3D3 - Light Gray
+  divider: Colors.lightGray,            // #D3D3D3 - Light Gray
   
-  placeholder: '#d1d5db',
-  disabled: '#9ca3af',
+  placeholder: Colors.mediumGray,       // #B0B0B0 - Medium Gray
+  disabled: Colors.mediumGray,          // #B0B0B0 - Medium Gray
   shadow: '#000000',
 };
 
 /**
- * Dark theme color palette
+ * Dark theme color palette - Darker neutral tones
  */
 const darkColors: ThemeColors = {
-  background: '#111827',
-  cardBackground: '#1f2937',
-  surface: '#374151',
+  background: '#1a1a1a',                // Very Dark Gray
+  cardBackground: '#2d2d2d',            // Dark Gray
+  surface: '#3d3d3d',                   // Medium Dark Gray
   
-  text: '#f9fafb',
-  textSecondary: '#d1d5db',
-  textTertiary: '#9ca3af',
+  text: Colors.cream,                   // #FFFBF8 - Cream (for dark bg)
+  textSecondary: Colors.lightBeige,     // #F5F1ED - Light Beige
+  textTertiary: Colors.mediumGray,      // #B0B0B0 - Medium Gray
   
-  primary: '#60a5fa',
-  primaryLight: '#93c5fd',
-  primaryDark: '#3b82f6',
+  primary: Colors.olive,                // #6B7062 - Olive
+  primaryLight: '#8a9080',              // Lighter Olive
+  primaryDark: Colors.darkOlive,        // #3D3D3D - Dark Olive
   
   success: '#34d399',
-  error: '#f87171',
+  error: '#f87171',                     // Lighter red for dark mode
   warning: '#fbbf24',
-  info: '#60a5fa',
+  info: Colors.olive,
   
-  border: '#374151',
-  divider: '#4b5563',
+  border: '#4a4a4a',                    // Dark border
+  divider: '#4a4a4a',                   // Dark divider
   
-  placeholder: '#6b7280',
-  disabled: '#4b5563',
+  placeholder: Colors.mediumGray,       // #B0B0B0 - Medium Gray
+  disabled: '#6b6b6b',                  // Disabled gray
   shadow: '#000000',
 };
 
