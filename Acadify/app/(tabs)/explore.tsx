@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   RefreshControl,
   TouchableOpacity,
+  Image,
+  Dimensions,
 } from 'react-native';
 import { useAppDispatch } from '@/store/hooks';
 import { addFavorite } from '@/store/slices/favoritesSlice';
@@ -15,6 +17,8 @@ import BookCard, { Book } from '@/components/BookCard';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/colors';
 import { useTheme } from '@/contexts/ThemeContext';
+
+const { width } = Dimensions.get('window');
 
 /**
  * Search Screen for UniReads
@@ -34,6 +38,7 @@ export default function SearchScreen() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<'trending' | 'popular' | null>(null);
 
   /**
    * Fetch books from Open Library search API
@@ -87,14 +92,96 @@ export default function SearchScreen() {
     fetchBooks(searchQuery);
   }, []);
 
+  // Fetch trending books (recent, popular topics)
+  const fetchTrendingBooks = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    setActiveFilter('trending');
+
+    try {
+      // Fetch books from trending subjects
+      const trendingSubjects = ['artificial intelligence', 'machine learning', 'data science', 'blockchain'];
+      const randomSubject = trendingSubjects[Math.floor(Math.random() * trendingSubjects.length)];
+      
+      const response = await fetch(
+        `https://openlibrary.org/search.json?subject=${encodeURIComponent(randomSubject)}&sort=new&limit=20`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      const fetchedBooks: Book[] = (data.docs || []).map((doc: any) => ({
+        key: doc.key,
+        title: doc.title,
+        author_name: doc.author_name,
+        cover_i: doc.cover_i,
+        first_publish_year: doc.first_publish_year,
+        edition_count: doc.edition_count,
+      }));
+
+      setBooks(fetchedBooks);
+    } catch (err) {
+      console.error('Error fetching trending books:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch trending books');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch popular books (most editions, classic books)
+  const fetchPopularBooks = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    setActiveFilter('popular');
+
+    try {
+      // Fetch popular books sorted by edition count
+      const response = await fetch(
+        `https://openlibrary.org/search.json?q=bestseller&sort=editions&limit=20`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      const fetchedBooks: Book[] = (data.docs || []).map((doc: any) => ({
+        key: doc.key,
+        title: doc.title,
+        author_name: doc.author_name,
+        cover_i: doc.cover_i,
+        first_publish_year: doc.first_publish_year,
+        edition_count: doc.edition_count,
+      }));
+
+      setBooks(fetchedBooks);
+    } catch (err) {
+      console.error('Error fetching popular books:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch popular books');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   // Handle search button press
   const handleSearch = () => {
+    setActiveFilter(null);
     fetchBooks(searchQuery);
   };
 
   // Handle pull-to-refresh
   const handleRefresh = () => {
-    fetchBooks(searchQuery, true);
+    if (activeFilter === 'trending') {
+      fetchTrendingBooks();
+    } else if (activeFilter === 'popular') {
+      fetchPopularBooks();
+    } else {
+      fetchBooks(searchQuery, true);
+    }
   };
 
   // Handle adding book to favorites
@@ -127,27 +214,81 @@ export default function SearchScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Search Bar */}
-      <View style={[styles.searchContainer, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border }]}>
-        <View style={[styles.searchInputContainer, { backgroundColor: colors.surface }]}>
-          <IconSymbol name="magnifyingglass" size={20} color={colors.textSecondary} style={styles.searchIcon} />
-          <TextInput
-            style={[styles.searchInput, { color: colors.text }]}
-            placeholder="Search books, authors, ISBN..."
-            placeholderTextColor={colors.placeholder}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            onSubmitEditing={handleSearch}
-            returnKeyType="search"
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <IconSymbol name="xmark.circle.fill" size={20} color={colors.textTertiary} />
-            </TouchableOpacity>
-          )}
+      {/* Hero Image with Search Bar */}
+      <View style={styles.heroImageContainer}>
+        <Image
+          source={require('@/assets/images/search1.jpg')}
+          style={styles.heroImage}
+          resizeMode="cover"
+        />
+        <View style={styles.heroOverlay}>
+          {/* Discover Text */}
+          <Text style={styles.heroTitle}>Discover Your Next Read</Text>
+
+          {/* Main Search Bar Below Text */}
+          <View style={styles.heroSearchContainer}>
+            <View style={[styles.heroSearchInput, { backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: colors.primary }]}>
+              <IconSymbol name="magnifyingglass" size={20} color={colors.primary} style={styles.searchIcon} />
+              <TextInput
+                style={[styles.mainSearchInput, { color: colors.text }]}
+                placeholder="Search for books, authors, topics..."
+                placeholderTextColor={colors.textTertiary}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmitEditing={handleSearch}
+                returnKeyType="search"
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
+                  <IconSymbol name="xmark.circle.fill" size={18} color={colors.textTertiary} />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity 
+                style={[styles.inlineSearchButton, { backgroundColor: colors.primary }]} 
+                onPress={handleSearch}
+                activeOpacity={0.8}>
+                <IconSymbol name="arrow.right" size={18} color={Colors.cream} />
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-        <TouchableOpacity style={[styles.searchButton, { backgroundColor: colors.primary }]} onPress={handleSearch}>
-          <IconSymbol name="arrow.right" size={20} color={Colors.cream} />
+      </View>
+
+      {/* Trending and Popular Buttons */}
+      <View style={[styles.filterButtonsContainer, { backgroundColor: colors.cardBackground }]}>
+        <TouchableOpacity 
+          style={[
+            styles.filterButton, 
+            { backgroundColor: activeFilter === 'trending' ? colors.primary : colors.surface, 
+              borderColor: colors.border, 
+              borderWidth: activeFilter === 'trending' ? 0 : 1.5 
+            }
+          ]}
+          onPress={fetchTrendingBooks}
+          activeOpacity={0.8}>
+          <Text style={[
+            activeFilter === 'trending' ? styles.filterButtonText : styles.filterButtonTextSecondary,
+            { color: activeFilter === 'trending' ? Colors.cream : colors.text }
+          ]}>
+            Trending
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[
+            styles.filterButton, 
+            { backgroundColor: activeFilter === 'popular' ? colors.primary : colors.surface, 
+              borderColor: colors.border, 
+              borderWidth: activeFilter === 'popular' ? 0 : 1.5 
+            }
+          ]}
+          onPress={fetchPopularBooks}
+          activeOpacity={0.8}>
+          <Text style={[
+            activeFilter === 'popular' ? styles.filterButtonText : styles.filterButtonTextSecondary,
+            { color: activeFilter === 'popular' ? Colors.cream : colors.text }
+          ]}>
+            Popular
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -209,34 +350,126 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  searchContainer: {
-    flexDirection: 'row',
-    padding: 16,
-    borderBottomWidth: 1,
-    gap: 8,
+  heroImageContainer: {
+    width: width,
+    height: 280,
+    position: 'relative',
   },
-  searchInputContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    gap: 8,
+  heroImage: {
+    width: '100%',
+    height: '100%',
   },
-  searchIcon: {
-    marginRight: 4,
-  },
-  searchInput: {
-    flex: 1,
-    height: 44,
-    fontSize: 16,
-  },
-  searchButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+  heroOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 20,
+    gap: 16,
+  },
+  heroTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 16,
+    letterSpacing: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.6)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
+  },
+  heroSearchContainer: {
+    width: '90%',
+  },
+  heroSearchInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+    borderWidth: 1.5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  mainSearchInput: {
+    flex: 1,
+    height: 40,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  clearButton: {
+    padding: 4,
+    marginRight: 6,
+  },
+  inlineSearchButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 2,
+  },
+  smallSearchContainer: {
+    width: '85%',
+  },
+  smallSearchInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  smallSearchText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  filterButtonsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+  },
+  filterButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  filterButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.cream,
+  },
+  filterButtonTextSecondary: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   listContainer: {
     padding: 16,
