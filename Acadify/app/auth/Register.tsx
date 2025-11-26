@@ -164,7 +164,7 @@ export default function RegisterScreen() {
                   {/* Username Input */}
                   <View style={styles.inputContainer}>
                     <View style={styles.inputWrapper}>
-                      <IconSymbol name="person.fill" size={20} color="#4bee84ff" style={styles.inputIcon} />
+                      <IconSymbol name="person.fill" size={20} color="#86efac" style={styles.inputIcon} />
                       <RNTextInput
                         placeholder="Username"
                         autoCapitalize="none"
@@ -230,7 +230,7 @@ export default function RegisterScreen() {
                   {/* Email Input */}
                   <View style={styles.inputContainer}>
                     <View style={styles.inputWrapper}>
-                      <IconSymbol name="envelope.fill" size={20} color="#4ade80" style={styles.inputIcon} />
+                      <IconSymbol name="envelope.fill" size={20} color="#86efac" style={styles.inputIcon} />
                       <RNTextInput
                         placeholder="Email Address"
                         keyboardType="email-address"
@@ -253,7 +253,7 @@ export default function RegisterScreen() {
                   {/* Password Input */}
                   <View style={styles.inputContainer}>
                     <View style={styles.inputWrapper}>
-                      <IconSymbol name="lock.fill" size={20} color="#4ade80" style={styles.inputIcon} />
+                      <IconSymbol name="lock.fill" size={20} color="#86efac" style={styles.inputIcon} />
                       <RNTextInput
                         placeholder="Password"
                         secureTextEntry={!showPassword}
@@ -282,7 +282,7 @@ export default function RegisterScreen() {
                   {/* Confirm Password Input */}
                   <View style={styles.inputContainer}>
                     <View style={styles.inputWrapper}>
-                      <IconSymbol name="lock.fill" size={20} color="#4ade80" style={styles.inputIcon} />
+                      <IconSymbol name="lock.fill" size={20} color="#86efac" style={styles.inputIcon} />
                       <RNTextInput
                         placeholder="Confirm Password"
                         secureTextEntry={!showConfirmPassword}
@@ -312,7 +312,7 @@ export default function RegisterScreen() {
 
                   {/* Terms & Conditions Info */}
                   <View style={styles.termsInfo}>
-                    <IconSymbol name="checkmark.shield.fill" size={18} color="#22c55e" />
+                    <IconSymbol name="checkmark.shield.fill" size={18} color="#86efac" />
                     <Text style={styles.termsText}>
                       By signing up, you agree to our{' '}
                       <Text style={styles.termsLink}>Terms & Conditions</Text>
@@ -329,7 +329,7 @@ export default function RegisterScreen() {
                     ) : (
                       <BlurView intensity={90} tint="light" style={styles.signupBlurView}>
                         <LinearGradient
-                          colors={['rgba(34, 197, 94, 0.8)', 'rgba(22, 163, 74, 0.9)', 'rgba(21, 128, 61, 0.95)']}
+                          colors={['rgba(134, 239, 172, 0.7)', 'rgba(74, 222, 128, 0.8)', 'rgba(34, 197, 94, 0.85)']}
                           start={{ x: 0, y: 0 }}
                           end={{ x: 1, y: 1 }}
                           style={styles.signupGradient}>
@@ -514,11 +514,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(74, 222, 128, 0.4)',
+    borderColor: 'rgba(134, 239, 172, 0.3)',
   },
   genderButtonActive: {
-    backgroundColor: 'rgba(34, 197, 94, 0.4)',
-    borderColor: '#4ade80',
+    backgroundColor: 'rgba(134, 239, 172, 0.3)',
+    borderColor: '#86efac',
     borderWidth: 1.5,
   },
   genderButtonText: {
@@ -532,13 +532,13 @@ const styles = StyleSheet.create({
   termsInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(34, 197, 94, 0.25)',
+    backgroundColor: 'rgba(134, 239, 172, 0.2)',
     padding: 14,
     borderRadius: 16,
     marginBottom: 24,
     gap: 10,
     borderWidth: 1.5,
-    borderColor: 'rgba(74, 222, 128, 0.5)',
+    borderColor: 'rgba(134, 239, 172, 0.35)',
   },
   termsText: {
     fontSize: 12,
@@ -548,7 +548,7 @@ const styles = StyleSheet.create({
   },
   termsLink: {
     fontWeight: '900',
-    color: '#4ade80',
+    color: '#86efac',
     textDecorationLine: 'underline',
   },
   signupButton: {
@@ -556,12 +556,12 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     overflow: 'hidden',
     elevation: 12,
-    shadowColor: '#22c55e',
+    shadowColor: '#86efac',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.6,
+    shadowOpacity: 0.5,
     shadowRadius: 20,
     borderWidth: 2,
-    borderColor: 'rgba(74, 222, 128, 0.4)',
+    borderColor: 'rgba(134, 239, 172, 0.35)',
   },
   signupButtonDisabled: {
     opacity: 0.5,
@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   loginLink: {
-    color: '#4ade80',
+    color: '#86efac',
     fontWeight: '900',
   },
 });
