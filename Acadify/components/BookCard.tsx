@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Colors } from '@/constants/colors';
 
 // Book type matching Open Library API response
 export type Book = {
@@ -38,6 +40,7 @@ function getBookStatus(book: Book): string {
  */
 export default function BookCard({ book, onFavoritePress }: BookCardProps) {
   const router = useRouter();
+  const { colors } = useTheme();
 
   // Build cover image URL from Open Library cover API
   const coverUrl = book.cover_i
@@ -59,22 +62,22 @@ export default function BookCard({ book, onFavoritePress }: BookCardProps) {
   };
 
   return (
-    <TouchableOpacity style={styles.card} onPress={handlePress} activeOpacity={0.7}>
+    <TouchableOpacity style={[styles.card, { backgroundColor: colors.cardBackground, shadowColor: colors.shadow }]} onPress={handlePress} activeOpacity={0.7}>
       <View style={styles.coverContainer}>
         {coverUrl ? (
           <Image source={{ uri: coverUrl }} style={styles.cover} resizeMode="cover" />
         ) : (
-          <View style={[styles.cover, styles.placeholderCover]}>
-            <Text style={styles.placeholderText}>No Cover</Text>
+          <View style={[styles.cover, styles.placeholderCover, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.placeholderText, { color: colors.textTertiary }]}>No Cover</Text>
           </View>
         )}
       </View>
 
       <View style={styles.infoContainer}>
-        <Text style={styles.title} numberOfLines={2}>
+        <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
           {book.title}
         </Text>
-        <Text style={styles.author} numberOfLines={1}>
+        <Text style={[styles.author, { color: colors.textSecondary }]} numberOfLines={1}>
           {authors}
         </Text>
 
@@ -85,7 +88,7 @@ export default function BookCard({ book, onFavoritePress }: BookCardProps) {
 
           {onFavoritePress && (
             <TouchableOpacity onPress={handleFavoritePress} style={styles.favoriteButton}>
-              <IconSymbol name="heart" size={20} color="#e11d48" />
+              <IconSymbol name="heart" size={20} color={Colors.error} />
             </TouchableOpacity>
           )}
         </View>
@@ -109,11 +112,9 @@ function getStatusStyle(status: string) {
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -128,12 +129,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   placeholderCover: {
-    backgroundColor: '#e5e7eb',
     justifyContent: 'center',
     alignItems: 'center',
   },
   placeholderText: {
-    color: '#9ca3af',
     fontSize: 12,
   },
   infoContainer: {
@@ -143,12 +142,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
     marginBottom: 4,
   },
   author: {
     fontSize: 14,
-    color: '#6b7280',
     marginBottom: 8,
   },
   footer: {
