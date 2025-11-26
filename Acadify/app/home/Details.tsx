@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Alert,
+  Modal,
+  Dimensions,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -16,6 +18,8 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import type { RootState } from '@/store/store';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Colors } from '@/constants/colors';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Type for detailed book information from Open Library Works API
 type BookDetails = {
@@ -65,6 +69,7 @@ export default function Details() {
   const [rating, setRating] = useState<number>(4.2);
   const [reviewCount, setReviewCount] = useState<number>(45);
   const [showMoreDetails, setShowMoreDetails] = useState<boolean>(false);
+  const [showImageModal, setShowImageModal] = useState<boolean>(false);
 
   // Check if book is already in favorites
   const favorites = useAppSelector((state: RootState) => (state as any).favorites?.items || []);
@@ -247,13 +252,17 @@ export default function Details() {
 
       {/* Book Cover Section */}
       <View style={[styles.coverSection, { backgroundColor: colors.cardBackground }]}>
-        {coverUrl ? (
-          <Image source={{ uri: coverUrl }} style={styles.coverImage} resizeMode="cover" />
-        ) : (
-          <View style={[styles.coverImage, styles.placeholderCover, { backgroundColor: colors.surface }]}>
-            <IconSymbol name="book" size={64} color={colors.textTertiary} />
-          </View>
-        )}
+        <TouchableOpacity 
+          onPress={() => coverUrl && setShowImageModal(true)}
+          activeOpacity={coverUrl ? 0.8 : 1}>
+          {coverUrl ? (
+            <Image source={{ uri: coverUrl }} style={styles.coverImage} resizeMode="cover" />
+          ) : (
+            <View style={[styles.coverImage, styles.placeholderCover, { backgroundColor: colors.surface }]}>
+              <IconSymbol name="book" size={64} color={colors.textTertiary} />
+            </View>
+          )}
+        </TouchableOpacity>
         
         {/* Badge */}
         {bookDetails.first_publish_year && bookDetails.first_publish_year >= new Date().getFullYear() - 2 && (
@@ -354,6 +363,30 @@ export default function Details() {
           <Text style={styles.addToListText}>{isFavorite ? 'In Favorites' : 'Add to Favorites'}</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Full Screen Image Modal */}
+      <Modal
+        visible={showImageModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowImageModal(false)}>
+        <View style={styles.modalContainer}>
+          <TouchableOpacity 
+            style={styles.modalBackdrop} 
+            activeOpacity={1}
+            onPress={() => setShowImageModal(false)}>
+            <View style={styles.modalContent}>
+              {coverUrl && (
+                <Image 
+                  source={{ uri: coverUrl }} 
+                  style={styles.fullScreenImage} 
+                  resizeMode="contain" 
+                />
+              )}
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -622,6 +655,25 @@ const styles = StyleSheet.create({
     color: Colors.cream,
     fontSize: 16,
     fontWeight: '700',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+  },
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullScreenImage: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT * 0.8,
   },
 });
 
