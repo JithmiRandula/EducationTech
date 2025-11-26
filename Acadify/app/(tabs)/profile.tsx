@@ -161,8 +161,8 @@ export default function Profile() {
         >
           <View style={styles.settingRow}>
             <View style={styles.settingLeft}>
-              <View style={[styles.iconContainer, { backgroundColor: Colors.lightBeige }]}>
-                <IconSymbol name="heart.fill" size={24} color={Colors.error} />
+              <View style={[styles.iconContainer, { backgroundColor: colors.surface }]}>
+                <IconSymbol name="heart" size={24} color={colors.text} />
               </View>
               <View style={styles.settingTextContainer}>
                 <Text style={[styles.settingTitle, { color: colors.text }]}>My Favorites</Text>
