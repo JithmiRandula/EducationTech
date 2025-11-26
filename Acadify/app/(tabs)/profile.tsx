@@ -151,6 +151,7 @@ export default function Profile() {
         <TouchableOpacity 
           style={[styles.settingCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}
           activeOpacity={0.7}
+          onPress={() => router.push('/account/AccountDetails')}
         >
           <View style={styles.settingRow}>
             <View style={styles.settingLeft}>
