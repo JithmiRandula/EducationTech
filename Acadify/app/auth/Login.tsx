@@ -204,7 +204,7 @@ export default function LoginScreen() {
                 {/* Username Input */}
                 <View style={styles.inputContainer}>
                   <View style={styles.inputWrapper}>
-                    <IconSymbol name="person.fill" size={20} color="#60a5fa" style={styles.inputIcon} />
+                    <IconSymbol name="person.fill" size={20} color="#C19A6B" style={styles.inputIcon} />
                     <RNTextInput
                       placeholder="Username"
                       autoCapitalize="none"
@@ -226,7 +226,7 @@ export default function LoginScreen() {
                 {/* Password Input */}
                 <View style={styles.inputContainer}>
                   <View style={styles.inputWrapper}>
-                    <IconSymbol name="lock.fill" size={20} color="#60a5fa" style={styles.inputIcon} />
+                    <IconSymbol name="lock.fill" size={20} color="#C19A6B" style={styles.inputIcon} />
                     <RNTextInput
                       placeholder="Password"
                       secureTextEntry={!showPassword}
@@ -252,22 +252,6 @@ export default function LoginScreen() {
                   ) : null}
                 </View>
 
-                {/* Default Credentials Info */}
-                <View style={styles.credentialsInfo}>
-                  <IconSymbol name="info.circle.fill" size={16} color="#3b82f6" />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.credentialsText}>
-                      Test Users (username / password):
-                    </Text>
-                    <Text style={[styles.credentialsText, { marginTop: 4 }]}>
-                      <Text style={styles.credentialsBold}>emilys / emilyspass</Text>
-                    </Text>
-                    <Text style={styles.credentialsText}>
-                      <Text style={styles.credentialsBold}>michaelw / michaelwpass</Text>
-                    </Text>
-                  </View>
-                </View>
-
                 {/* Login Button with Glass Effect */}
                 <TouchableOpacity
                   onPress={() => handleSubmit()}
@@ -278,7 +262,7 @@ export default function LoginScreen() {
                   ) : (
                     <BlurView intensity={90} tint="light" style={styles.loginBlurView}>
                       <LinearGradient
-                        colors={['rgba(59, 130, 246, 0.8)', 'rgba(37, 99, 235, 0.9)', 'rgba(29, 78, 216, 0.95)']}
+                        colors={['rgba(139, 92, 63, 0.8)', 'rgba(101, 67, 33, 0.9)', 'rgba(78, 52, 26, 0.95)']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                         style={styles.loginGradient}>
@@ -474,12 +458,12 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     overflow: 'hidden',
     elevation: 12,
-    shadowColor: '#3b82f6',
+    shadowColor: '#8B5C3F',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.6,
     shadowRadius: 20,
     borderWidth: 2,
-    borderColor: 'rgba(96, 165, 250, 0.4)',
+    borderColor: 'rgba(139, 92, 63, 0.4)',
   },
   loginButtonDisabled: {
     opacity: 0.5,
@@ -513,7 +497,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   signupLink: {
-    color: '#60a5fa',
+    color: '#C19A6B',
     fontWeight: '900',
   },
 });
