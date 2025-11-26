@@ -187,6 +187,18 @@ export default function Home() {
         />
       }>
       
+      {/* Hero Section */}
+      <View style={styles.heroSection}>
+        <Image
+          source={require('@/assets/images/book2.jpg')}
+          style={styles.heroImage}
+          resizeMode="cover"
+        />
+        <View style={styles.heroOverlay}>
+          <Text style={styles.heroTitle}>UniReads</Text>
+        </View>
+      </View>
+      
       {/* My Books Section */}
       {favoritesWithSubjects.length > 0 && (
         <View style={styles.section}>
@@ -336,6 +348,36 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     textAlign: 'center',
+  },
+  heroSection: {
+    width: '100%',
+    height: 200,
+    marginBottom: 10,
+    position: 'relative',
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  heroOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  heroTitle: {
+    fontSize: 48,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    fontStyle: 'italic',
+    letterSpacing: 2,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 4,
   },
   section: {
     marginTop: 20,
