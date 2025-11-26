@@ -16,6 +16,7 @@ import { clearFavorites } from '@/store/slices/favoritesSlice';
 import { useTheme } from '@/contexts/ThemeContext';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import type { RootState } from '@/store/store';
+import { Colors } from '@/constants/colors';
 
 /**
  * Profile Screen for UniReads
@@ -87,8 +88,8 @@ export default function Profile() {
     >
       {/* Profile Header */}
       <View style={[styles.header, { backgroundColor: colors.cardBackground }]}>
-        <View style={[styles.avatarContainer, { backgroundColor: colors.primary }]}>
-          <IconSymbol name="person.fill" size={48} color="#ffffff" />
+        <View style={[styles.avatarContainer, { backgroundColor: Colors.primary }]}>
+          <IconSymbol name="person.fill" size={48} color={Colors.cream} />
         </View>
         <Text style={[styles.username, { color: colors.text }]}>{username}</Text>
         <Text style={[styles.userId, { color: colors.textSecondary }]}>ID: {userId}</Text>
@@ -102,11 +103,11 @@ export default function Profile() {
         <View style={[styles.settingCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
           <View style={styles.settingRow}>
             <View style={styles.settingLeft}>
-              <View style={[styles.iconContainer, { backgroundColor: isDark ? '#1e293b' : '#f1f5f9' }]}>
+              <View style={[styles.iconContainer, { backgroundColor: isDark ? Colors.darkOlive : Colors.lightBeige }]}>
                 <IconSymbol 
                   name={isDark ? 'moon.fill' : 'sun.max.fill'} 
                   size={24} 
-                  color={isDark ? '#fbbf24' : '#f59e0b'} 
+                  color={isDark ? Colors.olive : Colors.primary} 
                 />
               </View>
               <View style={styles.settingTextContainer}>
@@ -119,9 +120,9 @@ export default function Profile() {
             <Switch
               value={isDark}
               onValueChange={toggleTheme}
-              trackColor={{ false: '#d1d5db', true: colors.primary }}
-              thumbColor={isDark ? '#ffffff' : '#f9fafb'}
-              ios_backgroundColor="#d1d5db"
+              trackColor={{ false: Colors.lightGray, true: Colors.primary }}
+              thumbColor={isDark ? Colors.cream : Colors.lightBeige}
+              ios_backgroundColor={Colors.lightGray}
             />
           </View>
         </View>
@@ -138,8 +139,8 @@ export default function Profile() {
         >
           <View style={styles.settingRow}>
             <View style={styles.settingLeft}>
-              <View style={[styles.iconContainer, { backgroundColor: '#ede9fe' }]}>
-                <IconSymbol name="person.circle" size={24} color="#8b5cf6" />
+              <View style={[styles.iconContainer, { backgroundColor: Colors.lightBeige }]}>
+                <IconSymbol name="person.circle" size={24} color={Colors.primary} />
               </View>
               <View style={styles.settingTextContainer}>
                 <Text style={[styles.settingTitle, { color: colors.text }]}>Account Details</Text>
@@ -160,8 +161,8 @@ export default function Profile() {
         >
           <View style={styles.settingRow}>
             <View style={styles.settingLeft}>
-              <View style={[styles.iconContainer, { backgroundColor: '#fee2e2' }]}>
-                <IconSymbol name="heart.fill" size={24} color="#e11d48" />
+              <View style={[styles.iconContainer, { backgroundColor: Colors.lightBeige }]}>
+                <IconSymbol name="heart.fill" size={24} color={Colors.error} />
               </View>
               <View style={styles.settingTextContainer}>
                 <Text style={[styles.settingTitle, { color: colors.text }]}>My Favorites</Text>
@@ -183,8 +184,8 @@ export default function Profile() {
         <View style={[styles.settingCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
           <View style={styles.settingRow}>
             <View style={styles.settingLeft}>
-              <View style={[styles.iconContainer, { backgroundColor: '#dbeafe' }]}>
-                <IconSymbol name="info.circle" size={24} color="#3b82f6" />
+              <View style={[styles.iconContainer, { backgroundColor: Colors.lightBeige }]}>
+                <IconSymbol name="info.circle" size={24} color={Colors.primary} />
               </View>
               <View style={styles.settingTextContainer}>
                 <Text style={[styles.settingTitle, { color: colors.text }]}>App Version</Text>
@@ -199,11 +200,11 @@ export default function Profile() {
 
       {/* Logout Button */}
       <TouchableOpacity 
-        style={[styles.logoutButton, { backgroundColor: colors.error }]}
+        style={[styles.logoutButton, { backgroundColor: Colors.error }]}
         onPress={handleLogout}
         activeOpacity={0.8}
       >
-        <IconSymbol name="rectangle.portrait.and.arrow.right" size={22} color="#ffffff" />
+        <IconSymbol name="rectangle.portrait.and.arrow.right" size={22} color={Colors.cream} />
         <Text style={styles.logoutButtonText}>Logout</Text>
       </TouchableOpacity>
 
@@ -227,7 +228,7 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: Colors.lightGray,
   },
   avatarContainer: {
     width: 100,
@@ -300,7 +301,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   logoutButtonText: {
-    color: '#ffffff',
+    color: Colors.cream,
     fontSize: 16,
     fontWeight: '600',
   },
