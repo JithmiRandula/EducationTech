@@ -69,7 +69,6 @@ function RootLayoutNav() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="home/Details" options={{ headerShown: true, title: 'Book Details' }} />
       <Stack.Screen name="account/AccountDetails" />
-      <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
     </Stack>
   );
 }

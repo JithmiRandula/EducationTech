@@ -5,15 +5,10 @@
  * 
  * @example
  * ```tsx
- * import { useFetchBooks, useFavorites, useTheme } from '@/hooks';
+ * import { useColorScheme } from '@/hooks';
  * ```
  */
 
-export { useFetchBooks } from './useFetchBooks';
-export { useFavorites } from './useFavorites';
-export { useTheme } from './useTheme';
-
-// Export types
-export type { UseFetchBooksState, Book as FetchBook } from './useFetchBooks';
-export type { UseFavoritesState, Book as FavoriteBook } from './useFavorites';
-export type { ThemeMode, ThemeColors } from './useTheme';
+// Export color scheme hooks
+export { useColorScheme } from './use-color-scheme';
+export { useThemeColor } from './use-theme-color';
