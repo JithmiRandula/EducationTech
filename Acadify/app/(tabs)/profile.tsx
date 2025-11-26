@@ -38,9 +38,17 @@ export default function Profile() {
   const { theme, colors, toggleTheme, isDark } = useTheme();
   
   // Get user info from Redux store
-  const user = useAppSelector((state: RootState) => (state as any).user);
+  const userState = useAppSelector((state: RootState) => state.user);
+  const user = userState?.user; // Access the nested user object
+  
+  // Display username as the main title
   const username = user?.username || 'Guest User';
-  const userId = user?.id || 'N/A';
+  
+  // Display email below username
+  const email = user?.email || 'No email available';
+  
+  // Debug log
+  console.log('Profile - User data:', { username, email, fullUser: user });
 
   /**
    * Handle user logout
@@ -92,7 +100,7 @@ export default function Profile() {
           <IconSymbol name="person.fill" size={48} color={Colors.cream} />
         </View>
         <Text style={[styles.username, { color: colors.text }]}>{username}</Text>
-        <Text style={[styles.userId, { color: colors.textSecondary }]}>ID: {userId}</Text>
+        <Text style={[styles.email, { color: colors.textSecondary }]}>{email}</Text>
       </View>
 
       {/* Settings Section */}
@@ -243,6 +251,10 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 24,
     fontWeight: '700',
+    marginBottom: 4,
+  },
+  email: {
+    fontSize: 15,
     marginBottom: 4,
   },
   userId: {

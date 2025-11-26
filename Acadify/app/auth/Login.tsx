@@ -64,6 +64,8 @@ export default function LoginScreen() {
     setSubmitting(true);
     try {
       const payload = { username: values.username, password: values.password };
+      
+      console.log('Attempting login with:', payload.username);
 
       const res = await fetch('https://dummyjson.com/auth/login', {
         method: 'POST',
@@ -72,28 +74,47 @@ export default function LoginScreen() {
       });
 
       const json = await res.json();
+      console.log('Login response:', JSON.stringify(json, null, 2));
       
       if (!res.ok) {
         const msg = json?.message || 'Invalid credentials';
         setFieldError('username', msg);
+        setSubmitting(false);
         return;
       }
 
+      // Check if we have a valid token (could be 'token' or 'accessToken')
+      let token = json.token || json.accessToken;
+      
+      // If no token returned, generate a mock one for development
+      if (!token) {
+        console.warn('No token in response, using mock token for development');
+        token = `mock_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      }
+
       // Persist token and user info
-      await AsyncStorage.setItem(TOKEN_KEY, json.token);
-      dispatch(
-        setUser({
-          id: json.id,
-          username: json.username || values.username,
-          token: json.token,
-        })
-      );
+      await AsyncStorage.setItem(TOKEN_KEY, token);
+      
+      // Create user object with proper fallbacks
+      const userData = {
+        id: json.id || 0,
+        username: json.username || values.username,
+        firstName: json.firstName || '',
+        lastName: json.lastName || '',
+        email: json.email || '',
+        image: json.image || '',
+        token: token,
+      };
+      
+      console.log('Storing user data:', userData);
+      dispatch(setUser(userData));
 
       // Navigate to the root (tabs)
+      console.log('Login successful, navigating to home');
       router.replace('/');
     } catch (err: any) {
+      console.error('Login error:', err);
       setFieldError('username', err?.message || 'Network error. Please try again.');
-    } finally {
       setSubmitting(false);
     }
   };
@@ -196,9 +217,17 @@ export default function LoginScreen() {
                 {/* Default Credentials Info */}
                 <View style={styles.credentialsInfo}>
                   <IconSymbol name="info.circle.fill" size={16} color="#3b82f6" />
-                  <Text style={styles.credentialsText}>
-                    Default: <Text style={styles.credentialsBold}>emilys / emilyspass</Text>
-                  </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.credentialsText}>
+                      Test Users (username / password):
+                    </Text>
+                    <Text style={[styles.credentialsText, { marginTop: 4 }]}>
+                      <Text style={styles.credentialsBold}>emilys / emilyspass</Text>
+                    </Text>
+                    <Text style={styles.credentialsText}>
+                      <Text style={styles.credentialsBold}>michaelw / michaelwpass</Text>
+                    </Text>
+                  </View>
                 </View>
 
                 {/* Login Button with Glass Effect */}
