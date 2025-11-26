@@ -11,8 +11,8 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
-import { useAppDispatch } from '@/store/hooks';
-import { addFavorite } from '@/store/slices/favoritesSlice';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { addFavorite, removeFavorite } from '@/store/slices/favoritesSlice';
 import BookCard, { Book } from '@/components/BookCard';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/colors';
@@ -184,9 +184,20 @@ export default function SearchScreen() {
     }
   };
 
-  // Handle adding book to favorites
+  // Get favorites list
+  const favorites = useAppSelector((state) => state.favorites.items);
+
+  // Handle toggle favorite (add or remove)
   const handleFavoritePress = (book: Book) => {
-    dispatch(addFavorite(book));
+    const isFavorite = favorites.some((fav) => fav.key === book.key);
+    
+    if (isFavorite) {
+      // Remove from favorites
+      dispatch(removeFavorite(book.key));
+    } else {
+      // Add to favorites
+      dispatch(addFavorite(book));
+    }
   };
 
   // Render loading state
@@ -228,10 +239,10 @@ export default function SearchScreen() {
           {/* Main Search Bar Below Text */}
           <View style={styles.heroSearchContainer}>
             <View style={[styles.heroSearchInput, { backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: colors.primary }]}>
-              <IconSymbol name="magnifyingglass" size={20} color={colors.primary} style={styles.searchIcon} />
+              <IconSymbol name="magnifyingglass" size={18} color={colors.primary} style={styles.searchIcon} />
               <TextInput
                 style={[styles.mainSearchInput, { color: colors.text }]}
-                placeholder="Search for books, authors, topics..."
+                placeholder="Search for books, authors..."
                 placeholderTextColor={colors.textTertiary}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -240,14 +251,14 @@ export default function SearchScreen() {
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
-                  <IconSymbol name="xmark.circle.fill" size={18} color={colors.textTertiary} />
+                  <IconSymbol name="xmark.circle.fill" size={16} color={colors.textTertiary} />
                 </TouchableOpacity>
               )}
               <TouchableOpacity 
                 style={[styles.inlineSearchButton, { backgroundColor: colors.primary }]} 
                 onPress={handleSearch}
                 activeOpacity={0.8}>
-                <IconSymbol name="arrow.right" size={18} color={Colors.cream} />
+                <IconSymbol name="arrow.right" size={16} color={Colors.cream} />
               </TouchableOpacity>
             </View>
           </View>
@@ -383,38 +394,38 @@ const styles = StyleSheet.create({
     textShadowRadius: 6,
   },
   heroSearchContainer: {
-    width: '90%',
+    width: '85%',
   },
   heroSearchInput: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 4,
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 3,
     borderWidth: 1.5,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: 6,
   },
   mainSearchInput: {
     flex: 1,
-    height: 40,
-    fontSize: 14,
+    height: 36,
+    fontSize: 13,
     fontWeight: '500',
   },
   clearButton: {
-    padding: 4,
-    marginRight: 6,
+    padding: 3,
+    marginRight: 4,
   },
   inlineSearchButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 2,

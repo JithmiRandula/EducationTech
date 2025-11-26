@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Colors } from '@/constants/colors';
+import { useAppSelector } from '@/store/hooks';
 
 // Book type matching Open Library API response
 export type Book = {
@@ -42,6 +43,10 @@ function getBookStatus(book: Book): string {
 export default function BookCard({ book, onFavoritePress }: BookCardProps) {
   const router = useRouter();
   const { colors } = useTheme();
+  
+  // Check if this book is in favorites
+  const favorites = useAppSelector((state) => state.favorites.items);
+  const isFavorite = favorites.some((fav) => fav.key === book.key);
 
   // Build cover image URL from Open Library cover API
   const coverUrl = book.cover_i
@@ -89,7 +94,11 @@ export default function BookCard({ book, onFavoritePress }: BookCardProps) {
 
           {onFavoritePress && (
             <TouchableOpacity onPress={handleFavoritePress} style={styles.favoriteButton}>
-              <IconSymbol name="heart" size={20} color={Colors.error} />
+              <IconSymbol 
+                name={isFavorite ? "heart.fill" : "heart"} 
+                size={20} 
+                color={isFavorite ? Colors.error : colors.textSecondary} 
+              />
             </TouchableOpacity>
           )}
         </View>
