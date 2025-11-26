@@ -8,6 +8,7 @@ export type User = {
   email?: string;
   image?: string;
   token?: string;
+  gender?: string;
 };
 
 type UserState = {
