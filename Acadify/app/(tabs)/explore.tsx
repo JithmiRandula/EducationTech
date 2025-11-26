@@ -33,12 +33,13 @@ export default function SearchScreen() {
   const { colors } = useTheme();
   
   // State management
-  const [searchQuery, setSearchQuery] = useState('javascript'); // Default search term
+  const [searchQuery, setSearchQuery] = useState(''); // Start with empty search
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<'trending' | 'popular' | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
 
   /**
    * Fetch books from Open Library search API
@@ -46,7 +47,14 @@ export default function SearchScreen() {
    * @param isRefresh - Whether this is a pull-to-refresh action
    */
   const fetchBooks = useCallback(async (query: string, isRefresh = false) => {
-    if (!query.trim()) return;
+    // Validate query
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery || trimmedQuery.length < 2) {
+      setBooks([]);
+      setHasSearched(false);
+      setError(null);
+      return;
+    }
 
     // Set appropriate loading state
     if (isRefresh) {
@@ -55,14 +63,34 @@ export default function SearchScreen() {
       setLoading(true);
     }
     setError(null);
+    setActiveFilter(null);
+    setHasSearched(true);
 
     try {
-      const response = await fetch(
-        `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=20`
-      );
+      // Build safe URL
+      const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(trimmedQuery)}&limit=20`;
+      console.log('Searching for:', trimmedQuery);
+      
+      const response = await fetch(url);
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Get error details from response
+        let errorMessage = `Search failed (${response.status})`;
+        try {
+          const errorData = await response.json();
+          console.log('API Error Response:', errorData);
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // Response not JSON
+        }
+        
+        if (response.status === 422) {
+          throw new Error('Invalid search. Try simpler keywords like "fiction" or "science"');
+        } else if (response.status === 503) {
+          throw new Error('Search service temporarily unavailable. Please try again.');
+        } else {
+          throw new Error(errorMessage);
+        }
       }
 
       const data = await response.json();
@@ -81,16 +109,33 @@ export default function SearchScreen() {
     } catch (err) {
       console.error('Error fetching books:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch books');
+      setBooks([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   }, []);
 
-  // Fetch initial books on mount
+  // Auto-search with debounce when user types
   React.useEffect(() => {
-    fetchBooks(searchQuery);
-  }, []);
+    const trimmedQuery = searchQuery.trim();
+    
+    // Clear results if query is empty or too short
+    if (!trimmedQuery || trimmedQuery.length < 2) {
+      setBooks([]);
+      setHasSearched(false);
+      setError(null);
+      return;
+    }
+
+    // Debounce search - wait 800ms after user stops typing
+    const timeoutId = setTimeout(() => {
+      fetchBooks(searchQuery);
+    }, 800);
+
+    // Clear timeout if user keeps typing
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, fetchBooks]);
 
   // Fetch trending books (recent, popular topics)
   const fetchTrendingBooks = useCallback(async () => {
@@ -167,10 +212,12 @@ export default function SearchScreen() {
     }
   }, []);
 
-  // Handle search button press
+  // Handle search button press (for immediate search)
   const handleSearch = () => {
-    setActiveFilter(null);
-    fetchBooks(searchQuery);
+    if (searchQuery.trim()) {
+      setActiveFilter(null);
+      fetchBooks(searchQuery);
+    }
   };
 
   // Handle pull-to-refresh
@@ -210,15 +257,59 @@ export default function SearchScreen() {
     );
   }
 
-  // Render error state
-  if (error && books.length === 0) {
+  // Render error state (don't show if user is still typing)
+  if (error && books.length === 0 && hasSearched) {
     return (
-      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
-        <IconSymbol name="exclamationmark.triangle" size={48} color={colors.error} />
-        <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
-        <TouchableOpacity style={[styles.retryButton, { backgroundColor: colors.primary }]} onPress={() => fetchBooks(searchQuery)}>
-          <Text style={styles.retryButtonText}>Retry</Text>
-        </TouchableOpacity>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        {/* Hero Image with Search Bar */}
+        <View style={styles.heroImageContainer}>
+          <Image
+            source={require('@/assets/images/search1.jpg')}
+            style={styles.heroImage}
+            resizeMode="cover"
+          />
+          <View style={styles.heroOverlay}>
+            <Text style={styles.heroTitle}>Discover Your Next Read</Text>
+            <View style={styles.heroSearchContainer}>
+              <View style={[styles.heroSearchInput, { backgroundColor: 'rgba(255, 255, 255, 0.95)', borderColor: colors.primary }]}>
+                <IconSymbol name="magnifyingglass" size={18} color={colors.primary} style={styles.searchIcon} />
+                <TextInput
+                  style={[styles.mainSearchInput, { color: colors.text }]}
+                  placeholder="Search books, authors, subjects..."
+                  placeholderTextColor={colors.textTertiary}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  onSubmitEditing={handleSearch}
+                  returnKeyType="search"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
+                    <IconSymbol name="xmark.circle.fill" size={16} color={colors.textTertiary} />
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity 
+                  style={[styles.inlineSearchButton, { backgroundColor: colors.primary }]} 
+                  onPress={handleSearch}
+                  activeOpacity={0.8}>
+                  <IconSymbol name="arrow.right" size={16} color={Colors.cream} />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+        
+        {/* Error Message */}
+        <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+          <IconSymbol name="exclamationmark.triangle" size={48} color={colors.error} />
+          <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
+          <TouchableOpacity 
+            style={[styles.retryButton, { backgroundColor: colors.primary }]} 
+            onPress={() => searchQuery.trim() ? fetchBooks(searchQuery) : setError(null)}>
+            <Text style={styles.retryButtonText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -242,12 +333,14 @@ export default function SearchScreen() {
               <IconSymbol name="magnifyingglass" size={18} color={colors.primary} style={styles.searchIcon} />
               <TextInput
                 style={[styles.mainSearchInput, { color: colors.text }]}
-                placeholder="Search for books, authors..."
+                placeholder="Search books, authors, subjects..."
                 placeholderTextColor={colors.textTertiary}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 onSubmitEditing={handleSearch}
                 returnKeyType="search"
+                autoCapitalize="none"
+                autoCorrect={false}
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
@@ -321,9 +414,17 @@ export default function SearchScreen() {
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <IconSymbol name="magnifyingglass" size={64} color={colors.textTertiary} />
-            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No books found</Text>
-            <Text style={[styles.emptySubtext, { color: colors.textTertiary }]}>Try a different search term</Text>
+            <IconSymbol 
+              name={hasSearched ? "book.closed" : "magnifyingglass"} 
+              size={64} 
+              color={colors.textTertiary} 
+            />
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+              {hasSearched ? 'No books found' : 'Start searching'}
+            </Text>
+            <Text style={[styles.emptySubtext, { color: colors.textTertiary }]}>
+              {hasSearched ? 'Try a different search term' : 'Type a book title, author, or subject'}
+            </Text>
           </View>
         }
       />
