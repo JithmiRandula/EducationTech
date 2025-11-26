@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -156,7 +157,13 @@ export default function Home() {
             </TouchableOpacity>
           </View>
           
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+          <ScrollView 
+            horizontal 
+            pagingEnabled
+            showsHorizontalScrollIndicator={false} 
+            style={styles.horizontalScroll}
+            snapToInterval={Dimensions.get('window').width - 32}
+            decelerationRate="fast">
             {favorites.slice(0, 3).map((book: Book) => (
               <TouchableOpacity
                 key={book.key}
@@ -173,17 +180,18 @@ export default function Home() {
                   resizeMode="cover"
                 />
                 <View style={styles.myBookInfo}>
-                  <Text style={[styles.myBookTitle, { color: colors.text }]} numberOfLines={1}>
+                  <Text style={[styles.myBookTitle, { color: colors.text }]} numberOfLines={2}>
                     {book.title}
                   </Text>
                   <Text style={[styles.myBookAuthor, { color: colors.textSecondary }]} numberOfLines={1}>
                     {book.author_name?.[0] || 'Unknown Author'}
                   </Text>
                   <View style={styles.progressContainer}>
-                    <View style={styles.progressBar}>
-                      <View style={[styles.progressFill, { backgroundColor: colors.primary }]} />
-                    </View>
+                    <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>Progress</Text>
                     <Text style={[styles.progressPercent, { color: colors.text }]}>75%</Text>
+                  </View>
+                  <View style={styles.progressBar}>
+                    <View style={[styles.progressFill, { backgroundColor: colors.primary }]} />
                   </View>
                 </View>
               </TouchableOpacity>
@@ -301,55 +309,52 @@ const styles = StyleSheet.create({
   },
   horizontalScroll: {
     marginHorizontal: -16,
-    paddingHorizontal: 16,
   },
   myBookCard: {
     flexDirection: 'row',
-    width: 280,
-    height: 120,
-    marginRight: 16,
+    width: Dimensions.get('window').width - 32,
+    height: 140,
+    marginHorizontal: 16,
     borderRadius: 12,
     overflow: 'hidden',
-    elevation: 2,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
   },
   myBookCover: {
-    width: 80,
-    height: 120,
+    width: 100,
+    height: 140,
   },
   myBookInfo: {
     flex: 1,
-    padding: 12,
+    padding: 16,
     justifyContent: 'space-between',
   },
   myBookTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 2,
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 4,
   },
   myBookAuthor: {
-    fontSize: 12,
-    marginBottom: 8,
+    fontSize: 13,
+    marginBottom: 12,
   },
   progressContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 8,
+    marginBottom: 6,
   },
   progressLabel: {
-    fontSize: 11,
+    fontSize: 12,
   },
   progressPercent: {
-    fontSize: 11,
-    fontWeight: '600',
-    minWidth: 35,
-    textAlign: 'right',
+    fontSize: 12,
+    fontWeight: '700',
   },
   progressBar: {
-    flex: 1,
     height: 6,
     backgroundColor: '#E0E0E0',
     borderRadius: 3,
