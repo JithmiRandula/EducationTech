@@ -13,6 +13,7 @@ export type Book = {
   cover_i?: number;
   first_publish_year?: number;
   edition_count?: number;
+  subject?: string[];
 };
 
 type BookCardProps = {

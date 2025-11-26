@@ -46,8 +46,47 @@ export default function Home() {
   // State management
   const [selectedCategory, setSelectedCategory] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
+  const [favoritesWithSubjects, setFavoritesWithSubjects] = useState<Book[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  /**
+   * Fetch subject/genre details for favorite books
+   */
+  const fetchFavoriteSubjects = useCallback(async () => {
+    if (favorites.length === 0) return;
+
+    try {
+      const booksWithSubjects = await Promise.all(
+        favorites.slice(0, 3).map(async (book: Book) => {
+          try {
+            const workId = book.key.split('/').pop();
+            const response = await fetch(`https://openlibrary.org${book.key}.json`);
+            
+            if (!response.ok) return book;
+            
+            const workData = await response.json();
+            return {
+              ...book,
+              subject: workData.subjects || [],
+            };
+          } catch {
+            return book;
+          }
+        })
+      );
+      
+      setFavoritesWithSubjects(booksWithSubjects);
+    } catch (err) {
+      console.error('Error fetching favorite subjects:', err);
+      setFavoritesWithSubjects(favorites.slice(0, 3));
+    }
+  }, [favorites]);
+
+  // Fetch subjects for favorites when favorites change
+  React.useEffect(() => {
+    fetchFavoriteSubjects();
+  }, [favorites]);
 
   /**
    * Fetch books and organize by subjects
@@ -78,6 +117,7 @@ export default function Home() {
             cover_i: doc.cover_i,
             first_publish_year: doc.first_publish_year,
             edition_count: doc.edition_count,
+            subject: doc.subject || [],
           }));
           
           return { query, books };
@@ -148,7 +188,7 @@ export default function Home() {
       }>
       
       {/* My Books Section */}
-      {favorites.length > 0 && (
+      {favoritesWithSubjects.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>My books</Text>
@@ -164,7 +204,7 @@ export default function Home() {
             style={styles.horizontalScroll}
             snapToInterval={Dimensions.get('window').width - 32}
             decelerationRate="fast">
-            {favorites.slice(0, 3).map((book: Book) => (
+            {favoritesWithSubjects.map((book: Book) => (
               <TouchableOpacity
                 key={book.key}
                 style={[styles.myBookCard, { backgroundColor: colors.cardBackground }]}
@@ -180,18 +220,26 @@ export default function Home() {
                   resizeMode="cover"
                 />
                 <View style={styles.myBookInfo}>
-                  <Text style={[styles.myBookTitle, { color: colors.text }]} numberOfLines={2}>
-                    {book.title}
-                  </Text>
-                  <Text style={[styles.myBookAuthor, { color: colors.textSecondary }]} numberOfLines={1}>
-                    {book.author_name?.[0] || 'Unknown Author'}
-                  </Text>
-                  <View style={styles.progressContainer}>
-                    <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>Progress</Text>
-                    <Text style={[styles.progressPercent, { color: colors.text }]}>75%</Text>
+                  <View>
+                    <Text style={[styles.myBookTitle, { color: colors.text }]} numberOfLines={2}>
+                      {book.title}
+                    </Text>
+                    <Text style={[styles.myBookAuthor, { color: colors.textSecondary }]} numberOfLines={1}>
+                      {book.author_name?.[0] || 'Unknown Author'}
+                    </Text>
                   </View>
-                  <View style={styles.progressBar}>
-                    <View style={[styles.progressFill, { backgroundColor: colors.primary }]} />
+                  <View>
+                    <View style={styles.genresContainer}>
+                      {(book.subject && book.subject.length > 0) ? (
+                        <View style={[styles.genreTag, { backgroundColor: colors.surface }]}>
+                          <Text style={[styles.genreText, { color: colors.primary }]} numberOfLines={1}>
+                            {book.subject[0]}
+                          </Text>
+                        </View>
+                      ) : (
+                        <Text style={[styles.noGenreText, { color: colors.textTertiary }]}>No category available</Text>
+                      )}
+                    </View>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -339,30 +387,34 @@ const styles = StyleSheet.create({
   },
   myBookAuthor: {
     fontSize: 13,
-    marginBottom: 12,
+    marginBottom: 4,
   },
-  progressContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  categoryLabel: {
+    fontSize: 11,
+    fontWeight: '600',
     marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  progressLabel: {
-    fontSize: 12,
+  genresContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
   },
-  progressPercent: {
-    fontSize: 12,
-    fontWeight: '700',
+  genreTag: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
   },
-  progressBar: {
-    height: 6,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 3,
-    overflow: 'hidden',
+  genreText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
-  progressFill: {
-    width: '75%',
-    height: '100%',
+  noGenreText: {
+    fontSize: 11,
+    fontStyle: 'italic',
   },
   categoryScroll: {
     marginHorizontal: -16,
