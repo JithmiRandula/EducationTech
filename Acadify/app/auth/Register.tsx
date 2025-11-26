@@ -17,6 +17,7 @@ import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
 const { width, height } = Dimensions.get('window');
@@ -24,6 +25,7 @@ const { width, height } = Dimensions.get('window');
 // Form values shape
 type RegisterValues = {
   username: string;
+  gender: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -34,6 +36,9 @@ const RegisterSchema = Yup.object().shape({
   username: Yup.string()
     .min(3, 'Username must be at least 3 characters')
     .required('Username is required'),
+  gender: Yup.string()
+    .oneOf(['male', 'female'], 'Please select a gender')
+    .required('Gender is required'),
   email: Yup.string()
     .email('Enter a valid email')
     .required('Email is required'),
@@ -66,9 +71,41 @@ export default function RegisterScreen() {
       // Simulate API call for registration
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
+      // Get existing registered users or create empty array
+      const existingUsersJson = await AsyncStorage.getItem('registered_users');
+      const existingUsers = existingUsersJson ? JSON.parse(existingUsersJson) : [];
+
+      // Check if username already exists
+      const userExists = existingUsers.some((u: any) => u.username === values.username);
+      if (userExists) {
+        setFieldError('username', 'Username already exists. Please choose another.');
+        setSubmitting(false);
+        return;
+      }
+
+      // Create new user object
+      const newUser = {
+        id: Date.now(),
+        username: values.username,
+        email: values.email,
+        password: values.password,
+        gender: values.gender,
+        firstName: values.username,
+        lastName: '',
+        image: '',
+        createdAt: new Date().toISOString(),
+      };
+
+      // Add new user to array
+      existingUsers.push(newUser);
+
+      // Save updated users array
+      await AsyncStorage.setItem('registered_users', JSON.stringify(existingUsers));
+
+      console.log('User registered successfully:', { username: newUser.username, email: newUser.email, gender: newUser.gender });
+
       // For demo purposes, we'll just navigate to login
-      // In production, you would call your registration API here
-      alert('Registration successful! Please login.');
+      alert('Registration successful! Please login with your credentials.');
       router.push('/auth/Login');
     } catch (err: any) {
       setFieldError('email', err?.message || 'Registration failed. Please try again.');
@@ -80,6 +117,7 @@ export default function RegisterScreen() {
   // Empty initial values for registration
   const initialValues: RegisterValues = {
     username: '',
+    gender: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -141,6 +179,50 @@ export default function RegisterScreen() {
                       <View style={styles.errorContainer}>
                         <IconSymbol name="exclamationmark.circle" size={16} color="#ef4444" />
                         <Text style={styles.errorText}>{errors.username}</Text>
+                      </View>
+                    ) : null}
+                  </View>
+
+                  {/* Gender Selection */}
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.genderLabel}>Select Gender</Text>
+                    <View style={styles.genderContainer}>
+                      <TouchableOpacity
+                        style={[
+                          styles.genderButton,
+                          values.gender === 'male' && styles.genderButtonActive,
+                        ]}
+                        onPress={() => handleChange('gender')('male')}
+                        activeOpacity={0.7}>
+                        <Text
+                          style={[
+                            styles.genderButtonText,
+                            values.gender === 'male' && styles.genderButtonTextActive,
+                          ]}>
+                          Male
+                        </Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[
+                          styles.genderButton,
+                          values.gender === 'female' && styles.genderButtonActive,
+                        ]}
+                        onPress={() => handleChange('gender')('female')}
+                        activeOpacity={0.7}>
+                        <Text
+                          style={[
+                            styles.genderButtonText,
+                            values.gender === 'female' && styles.genderButtonTextActive,
+                          ]}>
+                          Female
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                    {touched.gender && errors.gender ? (
+                      <View style={styles.errorContainer}>
+                        <IconSymbol name="exclamationmark.circle" size={16} color="#ef4444" />
+                        <Text style={styles.errorText}>{errors.gender}</Text>
                       </View>
                     ) : null}
                   </View>
@@ -407,6 +489,45 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
+  },
+  genderLabel: {
+    fontSize: 14,
+    color: '#fff',
+    marginBottom: 12,
+    marginLeft: 4,
+    fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  genderContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  genderButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(74, 222, 128, 0.4)',
+  },
+  genderButtonActive: {
+    backgroundColor: 'rgba(34, 197, 94, 0.4)',
+    borderColor: '#4ade80',
+    borderWidth: 1.5,
+  },
+  genderButtonText: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  genderButtonTextActive: {
+    fontWeight: '800',
   },
   termsInfo: {
     flexDirection: 'row',

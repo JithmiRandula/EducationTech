@@ -67,6 +67,43 @@ export default function LoginScreen() {
       
       console.log('Attempting login with:', payload.username);
 
+      // First, check if user is registered locally
+      const registeredUsersJson = await AsyncStorage.getItem('registered_users');
+      const registeredUsers = registeredUsersJson ? JSON.parse(registeredUsersJson) : [];
+      
+      // Find locally registered user
+      const localUser = registeredUsers.find(
+        (u: any) => u.username === values.username && u.password === values.password
+      );
+
+      if (localUser) {
+        // User is registered locally
+        console.log('Found locally registered user:', localUser.username);
+        
+        const token = `local_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        await AsyncStorage.setItem(TOKEN_KEY, token);
+        
+        const userData = {
+          id: localUser.id,
+          username: localUser.username,
+          firstName: localUser.firstName || localUser.username,
+          lastName: localUser.lastName || '',
+          email: localUser.email || '',
+          image: localUser.image || '',
+          token: token,
+          gender: localUser.gender || 'male',
+        };
+        
+        console.log('Storing locally registered user data:', userData);
+        dispatch(setUser(userData));
+        
+        console.log('Login successful, navigating to home');
+        router.replace('/');
+        return;
+      }
+
+      // If not found locally, try DummyJSON API
+      console.log('Checking DummyJSON API for user:', payload.username);
       const res = await fetch('https://dummyjson.com/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -104,6 +141,7 @@ export default function LoginScreen() {
         email: json.email || '',
         image: json.image || '',
         token: token,
+        gender: json.gender || 'male',
       };
       
       console.log('Storing user data:', userData);
@@ -119,8 +157,8 @@ export default function LoginScreen() {
     }
   };
 
-  // Default credentials for easy testing
-  const initialValues: LoginValues = { username: 'emilys', password: 'emilyspass' };
+  // Default credentials - empty for user to enter
+  const initialValues: LoginValues = { username: '', password: '' };
 
   return (
     <ImageBackground

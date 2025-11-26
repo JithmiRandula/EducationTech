@@ -7,6 +7,7 @@ import {
   Switch,
   ScrollView,
   Alert,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,7 +23,7 @@ import { Colors } from '@/constants/colors';
  * Profile Screen for UniReads
  * 
  * Features:
- * 1️⃣ Displays logged-in user's username and email
+ * 1️⃣ Displays logged-in user's username
  * 2️⃣ Dark Mode toggle switch with real-time UI updates
  * 3️⃣ Theme preference stored in AsyncStorage via ThemeContext
  * 4️⃣ Logout functionality that clears user data and navigation
@@ -44,11 +45,14 @@ export default function Profile() {
   // Display username as the main title
   const username = user?.username || 'Guest User';
   
-  // Display email below username
-  const email = user?.email || 'No email available';
+  // Get gender-based profile image
+  const gender = user?.gender || 'male';
+  const profileImage = gender === 'female' 
+    ? require('@/assets/images/female.png') 
+    : require('@/assets/images/male.png');
   
   // Debug log
-  console.log('Profile - User data:', { username, email, fullUser: user });
+  console.log('Profile - User data:', { username, gender, fullUser: user });
 
   /**
    * Handle user logout
@@ -96,11 +100,14 @@ export default function Profile() {
     >
       {/* Profile Header */}
       <View style={[styles.header, { backgroundColor: colors.cardBackground }]}>
-        <View style={[styles.avatarContainer, { backgroundColor: Colors.primary }]}>
-          <IconSymbol name="person.fill" size={48} color={Colors.cream} />
+        <View style={styles.avatarContainer}>
+          <Image 
+            source={profileImage} 
+            style={styles.avatarImage}
+            resizeMode="cover"
+          />
         </View>
         <Text style={[styles.username, { color: colors.text }]}>{username}</Text>
-        <Text style={[styles.email, { color: colors.textSecondary }]}>{email}</Text>
       </View>
 
       {/* Settings Section */}
@@ -247,6 +254,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
+    overflow: 'hidden',
+    borderWidth: 3,
+    borderColor: Colors.primary,
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
   },
   username: {
     fontSize: 24,
