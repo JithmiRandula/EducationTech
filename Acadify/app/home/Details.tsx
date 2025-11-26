@@ -208,11 +208,11 @@ export default function Details() {
     
     for (let i = 0; i < 5; i++) {
       if (i < fullStars) {
-        stars.push(<IconSymbol key={i} name="star.fill" size={16} color="#FFA500" />);
+        stars.push(<IconSymbol key={i} name="star.fill" size={12} color="#FFA500" />);
       } else if (i === fullStars && hasHalfStar) {
-        stars.push(<IconSymbol key={i} name="star.leadinghalf.filled" size={16} color="#FFA500" />);
+        stars.push(<IconSymbol key={i} name="star.leadinghalf.filled" size={12} color="#FFA500" />);
       } else {
-        stars.push(<IconSymbol key={i} name="star" size={16} color="#D3D3D3" />);
+        stars.push(<IconSymbol key={i} name="star" size={12} color="#D3D3D3" />);
       }
     }
     return stars;
@@ -241,7 +241,7 @@ export default function Details() {
         <TouchableOpacity onPress={handleFavoriteToggle} style={styles.favoriteBtn}>
           <IconSymbol
             name={isFavorite ? 'heart.fill' : 'heart'}
-            size={24}
+            size={20}
             color={isFavorite ? Colors.error : colors.text}
           />
         </TouchableOpacity>
@@ -283,7 +283,7 @@ export default function Details() {
         <View style={styles.ratingContent}>
           <View style={styles.ratingLeft}>
             <View style={styles.ratingScoreContainer}>
-              <IconSymbol name="star.fill" size={20} color="#FFA500" />
+              <IconSymbol name="star.fill" size={16} color="#FFA500" />
               <Text style={[styles.ratingScore, { color: colors.text }]}>{rating.toFixed(1)}</Text>
             </View>
             <View style={styles.starsRow}>
@@ -295,7 +295,7 @@ export default function Details() {
           </View>
           <View style={styles.divider} />
           <TouchableOpacity style={[styles.yourRatingButton, { backgroundColor: colors.surface }]} activeOpacity={0.7}>
-            <IconSymbol name="star" size={16} color={colors.primary} />
+            <IconSymbol name="star" size={14} color={colors.primary} />
             <Text style={[styles.yourRatingText, { color: colors.primary }]}>Rate this book</Text>
           </TouchableOpacity>
         </View>
@@ -359,7 +359,7 @@ export default function Details() {
         <TouchableOpacity 
           style={[styles.addToListButton, { backgroundColor: colors.primary }]}
           onPress={handleFavoriteToggle}>
-          <IconSymbol name={isFavorite ? "checkmark" : "plus"} size={20} color={Colors.cream} />
+          <IconSymbol name={isFavorite ? "checkmark" : "plus"} size={16} color={Colors.cream} />
           <Text style={styles.addToListText}>{isFavorite ? 'In Favorites' : 'Add to Favorites'}</Text>
         </TouchableOpacity>
       </View>
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   favoriteBtn: {
-    padding: 8,
+    padding: 6,
     position: 'absolute',
     right: 60,
   },
@@ -494,8 +494,8 @@ const styles = StyleSheet.create({
   ratingSection: {
     marginHorizontal: 20,
     marginBottom: 16,
-    padding: 14,
-    borderRadius: 12,
+    padding: 10,
+    borderRadius: 10,
     borderWidth: 1,
   },
   ratingContent: {
@@ -510,11 +510,11 @@ const styles = StyleSheet.create({
   ratingScoreContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 6,
+    gap: 4,
+    marginBottom: 4,
   },
   ratingScore: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
   },
   starsRow: {
@@ -522,28 +522,28 @@ const styles = StyleSheet.create({
   },
   starsContainer: {
     flexDirection: 'row',
-    gap: 3,
+    gap: 2,
   },
   reviewCount: {
-    fontSize: 12,
+    fontSize: 11,
     marginTop: 2,
   },
   divider: {
     width: 1,
-    height: 50,
+    height: 40,
     backgroundColor: '#e0e0e0',
-    marginHorizontal: 12,
+    marginHorizontal: 10,
   },
   yourRatingButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: 3,
   },
   yourRatingText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     marginTop: 2,
   },
@@ -647,14 +647,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    gap: 6,
+    alignSelf: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
   },
   addToListText: {
     color: Colors.cream,
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
   },
   modalContainer: {
     flex: 1,
